@@ -1,15 +1,11 @@
 /*
  * PLX PCI905x serial EEPROM driver.
- * Currently supports PCI9050, PCI9052 and PCI9054.
- *
- * For PLX PCI9054, it assumes the chip is at least revision A.
- * 
- * For PLX PCI9054, it assumes a 4096-bit EEPROM is fitted. If a
- * 2048-bit EEPROM is fitted, this is shadowed into 4096 bits.
+ * Currently supports PCI9050, PCI9052 and PCI9054 (revision A or later).
+ * Untested support for PCI9030, PCI9056, PCI9060, PCI9080 and PCI9656.
  *
  * Written by Ian Abbott @ MEV Ltd. <ian.abbott@mev.co.uk>.
  * Copyright (C) 2002 MEV Limited.
- * 
+ *
  *     MEV Ltd.
  *     Suite 8 Baxall Business Centre
  *     Adswood Road Industrial Estate
@@ -17,27 +13,32 @@
  *     Cheshire
  *     SK3 8LF
  *     UNITED KINGDOM
- * 
+ *
  *     Tel: +44 (0)161 477 1898
  *     Fax: +44 (0)161 718 3587
  *     WWW: http://www.mev.co.uk/
- * 
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *
  * A copy of the GNU General Public License may be found in the file
  * "COPYING".
+ *
+ * As the copyright holder, MEV Limited reserves the right to re-use
+ * (either directly or by license to third parties) those parts of the
+ * program written by MEV Limited or its employees in other programs not
+ * covered by the GNU General Public License.
  */
 
 #include <linux/version.h>
@@ -146,9 +147,9 @@
 
 #define DRIVER_NAME	"plx905x"
 #define DRIVER_DESC	"PLX PCI905x Serial EEPROM Driver"
-/* Version 1.01 */
+/* Version 1.02 */
 #define DRIVER_VER_MAJOR	1
-#define DRIVER_VER_MINOR	1
+#define DRIVER_VER_MINOR	2
 #define DRIVER_VER_SUF		""
 #ifdef PLX905X_DEBUG
 #define DRIVER_VER_DEBUG_SUF	"-DEBUG"
@@ -169,22 +170,42 @@
 #define STRINGIFY(x)	STRINGIFY_(x)
 #define STRINGIFY_(x)	#x
 
-#define DEFAULT_VENDOR_ID	0x10B5
-#define DEFAULT_DEVICE_ID	0x9050
+#define PLX_VENDOR_ID		0x10B5
+#define PLX9030_DEVICE_ID	0x9030
+#define PLX9050_DEVICE_ID	0x9050
+#define PLX9054_DEVICE_ID	0x9054
+#define PLX9056_DEVICE_ID	0x9056
+#define PLX9060_DEVICE_ID	0x9060
+#define PLX9080_DEVICE_ID	0x9080
+#define PLX9656_DEVICE_ID	0x9656
+#define DEFAULT_DEVICE_ID	PLX9050_DEVICE_ID
 
 #define PLX9054_PCIHIDR	0x70
 #define PLX9054_PCIHIDR_VALUE	0x905410B5
+#define PLX9056_PCIHIDR_VALUE	0x905610B5
+#define PLX9060_PCIHIDR_VALUE	0x906010B5
+#define PLX9080_PCIHIDR_VALUE	0x908010B5
+#define PLX9656_PCIHIDR_VALUE	0x965610B5
 
-#define PLX9050_EEPROM_SIZE	128
-#define PLX9050_EEPROM_ADDR_LEN	6
+#define PLX9054_PCIHREV	0x74
+
+#define CS46_EEPROM_SIZE	128
+#define CS46_EEPROM_ADDR_LEN	6
+#define CS56_EEPROM_SIZE	256
+#define CS56_EEPROM_ADDR_LEN	8
+#define CS66_EEPROM_SIZE	512
+#define CS66_EEPROM_ADDR_LEN	8
+
 #define PLX9050_CNTRL	0x50
-#define PLX9054_EEPROM_SIZE	512
-#define PLX9054_EEPROM_ADDR_LEN	8
 #define PLX9054_CNTRL	0x6C
 #define EE_SK	0x01000000
 #define EE_CS	0x02000000
-#define EE_DI	0x04000000
+#define EE_DI	0x04000000	/* from EEPROM's point of view */
 #define EE_DO	0x08000000
+#define EE_DOE	0x80000000	/* for PCI9056 */
+
+#define PLX9050_EEMASK	(EE_SK | EE_CS | EE_DI | EE_DO)
+#define PLX9656_EEMASK	(EE_SK | EE_CS | EE_DI | EE_DO | EE_DOE)
 
 struct plx905x_dev {
 	unsigned long iobase;
@@ -192,6 +213,7 @@ struct plx905x_dev {
 	unsigned long iosize;
 	unsigned int iospace;
 	unsigned int cntrl;
+	unsigned long cntrl_eemask;
 	size_t eeprom_size;
 	unsigned int eeprom_addr_len;
 	struct semaphore sem;
@@ -221,6 +243,7 @@ static int eeprom_cmd_write_word(struct plx905x_dev *dev, unsigned int offset,
 		u16 data);
 static int eeprom_cmd_write_enable(struct plx905x_dev *dev);
 static int eeprom_cmd_write_disable(struct plx905x_dev *dev);
+static void eeprom_init(struct plx905x_dev *dev);
 static void eeprom_start_cmd(struct plx905x_dev *dev, u32 *cntrl);
 static void eeprom_put_bits(struct plx905x_dev *dev, u32 *cntrl,
 		unsigned int bits, unsigned int nbits);
@@ -258,9 +281,22 @@ static unsigned int subdevice = PCI_ANY_ID;
 MODULE_PARM(subdevice, "i");
 MODULE_PARM_DESC(subdevice, "PCI Subsystem Device ID (optional)");
 
-static int instance;
+static int instance = 0;
 MODULE_PARM(instance, "i");
-MODULE_PARM_DESC(instance, "Instance of PCI Vendor/Device/Subsystem IDs (default 0)");
+MODULE_PARM_DESC(instance,
+		"Instance of PCI Vendor/Device/Subsystem IDs (default 0)");
+
+static int eeprom = 0;
+MODULE_PARM(eeprom, "i");
+MODULE_PARM_DESC(eeprom,
+		"EEPROM type 46 (1024-bit), 56 (2048-bit), 66 (4096-bit) "
+		"(default depends on PLX device)");
+
+static int plx=0;
+MODULE_PARM(plx, "i");
+MODULE_PARM_DESC(plx,
+		"PLX chip type 0x9030, 0x9050, 0x9052 (equivalent to 0x9050), "
+		"0x9054, 0x9056, 0x9060, 0x9080, 0x9656 (default 0x9050)");
 
 static struct plx905x_dev plx905x_device = {0};
 static int plx905x_registered_chrdev = 0;
@@ -346,8 +382,42 @@ plx905x_module_init(void)
 		}
 	} else {
 		if ((vendor == PCI_ANY_ID) && (device == PCI_ANY_ID)) {
-			vendor = DEFAULT_VENDOR_ID;
-			device = DEFAULT_DEVICE_ID;
+			vendor = PLX_VENDOR_ID;
+			switch (plx) {
+			case 9030:
+			case 0x9030:
+				device = PLX9030_DEVICE_ID;
+				break;
+			case 9050:
+			case 0x9050:
+			case 9052:
+			case 0x9052:
+				device = PLX9050_DEVICE_ID;
+				break;
+			case 9054:
+			case 0x9054:
+				device = PLX9054_DEVICE_ID;
+				break;
+			case 9056:
+			case 0x9056:
+				device = PLX9056_DEVICE_ID;
+				break;
+			case 9060:
+			case 0x9060:
+				device = PLX9060_DEVICE_ID;
+				break;
+			case 9080:
+			case 0x9080:
+				device = PLX9080_DEVICE_ID;
+				break;
+			case 9656:
+			case 0x9656:
+				device = PLX9656_DEVICE_ID;
+				break;
+			default:
+				device = DEFAULT_DEVICE_ID;
+				break;
+			}
 		}
 		while ((pcidev = my_pci_find_subsys(vendor, device, subvendor,
 						subdevice, pcidev)) != NULL) {
@@ -400,8 +470,34 @@ plx905x_module_init(void)
 		} else if ((bar0present && !bar0ok)
 				|| (bar1present && !bar1ok)
 				|| !(bar0present || bar1present)) {
-			printk("not PLX PCI9050/9052/9054\n");
+			printk("not PLX\n");
 			return -ENODEV;
+		} else {
+			/* Assume it is PLX PCI9050/9052 */
+			unsigned model;
+			u8 rev;
+
+			/* Check 'plx' parameter for compatibility. */
+			if ((plx != 0) && (plx != 0x9050) && (plx != 9050)
+					&& (plx != 0x9052) && (plx != 9052)) {
+				printk("not specified PLX model\n");
+				return -ENODEV;
+			}
+			/* Check PCI revision to determine model. */
+			pci_read_config_byte(pcidev, PCI_REVISION_ID, &rev);
+			if (rev > 2) {
+				printk("not PLX PCI9050/9052 (revision is >2)\n");
+				return -ENODEV;
+			}
+			model = (rev < 2) ? 0x9050 : 0x9052;
+			printk("PCI%X rev %02X: ", model, rev);
+
+			/* Check 'eeprom' parameter is valid (if specified). */
+			if ((eeprom != 0) && (eeprom != 46) && (eeprom != 128)
+					&& (eeprom != 1024)) {
+				printk("invalid EEPROM type for PLX PCI9050/9052\n");
+				return -ENODEV;
+			}
 		}
 		if (!bar0present) {
 			get_pci_region(pcidev, PCI_BASE_ADDRESS_1,
@@ -410,9 +506,10 @@ plx905x_module_init(void)
 	}
 	/* Initialize device. */
 	sema_init(&plx905x_device.sem, 1);
-	plx905x_device.eeprom_size = PLX9050_EEPROM_SIZE;
-	plx905x_device.eeprom_addr_len = PLX9050_EEPROM_ADDR_LEN;
+	plx905x_device.eeprom_size = CS46_EEPROM_SIZE;
+	plx905x_device.eeprom_addr_len = CS46_EEPROM_ADDR_LEN;
 	plx905x_device.cntrl = PLX9050_CNTRL;	/* Change later for PCI9054 */
+	plx905x_device.cntrl_eemask = PLX9050_EEMASK;
 	plx905x_device.iospace = (barflags & PCI_BASE_ADDRESS_SPACE);
 	plx905x_device.iophys = baraddr;
 	plx905x_device.iosize = barsize;
@@ -444,15 +541,153 @@ plx905x_module_init(void)
 					plx905x_device.iosize);
 			return -ENOMEM;
 		}
-		/* Check for PLX PCI9054 */
+		/* Check for PLX PCI9030/9054/9056/9060/9080/9656 */
 		if (plx905x_device.iosize == 256) {
-			plx905x_device.eeprom_size = PLX9054_EEPROM_SIZE;
-			plx905x_device.eeprom_addr_len
-				= PLX9054_EEPROM_ADDR_LEN;
-			plx905x_device.cntrl = PLX9054_CNTRL;
-			if (readl(plx905x_device.iobase + PLX9054_PCIHIDR)
-					!= PLX9054_PCIHIDR_VALUE) {
-				printk("not PLX PCI9054\n");
+			unsigned model;
+			int model_okay = 0;
+
+			if ((plx == 0x9030) || (plx == 9030)) {
+				model = 0x9030;
+				model_okay = 1;
+				printk("PCI9030");
+			} else {
+				u32 hidr;
+				u8 hrev;
+				int hrev_okay = 0;
+
+				plx905x_device.cntrl = PLX9054_CNTRL;
+				hidr = readl(plx905x_device.iobase + PLX9054_PCIHIDR);
+				hrev = readb(plx905x_device.iobase + PLX9054_PCIHREV);
+				/* Check for supported type and revision. */
+				/* Check compatibility with 'plx' parameter. */
+				if (plx == 0) {
+					model_okay = 1;
+				}
+				switch (hidr) {
+				case PLX9054_PCIHIDR_VALUE:
+					model = 0x9054;
+					if ((plx == 0x9054) || (plx == 9054)) {
+						model_okay = 1;
+					}
+					if (hrev >= 0x0A) {
+						hrev_okay = 1;
+					}
+					break;
+				case PLX9056_PCIHIDR_VALUE:
+					model = 0x9056;
+					if ((plx == 0x9056) || (plx == 9056)) {
+						model_okay = 1;
+					}
+					hrev_okay = 1;
+					break;
+				case PLX9060_PCIHIDR_VALUE:
+					model = 0x9060;
+					if ((plx == 0x9060) || (plx == 9060)) {
+						model_okay = 1;
+					}
+					hrev_okay = 1;
+					break;
+				case PLX9080_PCIHIDR_VALUE:
+					model = 0x9080;
+					if ((plx == 0x9080) || (plx == 9080)) {
+						model_okay = 1;
+					}
+					hrev_okay = 1;
+					break;
+				case PLX9656_PCIHIDR_VALUE:
+					plx905x_device.cntrl_eemask = PLX9656_EEMASK;
+					model = 0x9656;
+					if ((plx == 0x9656) || (plx == 9656)) {
+						model_okay = 1;
+					}
+					if (hrev >= 0xAA) {
+						hrev_okay = 1;
+					}
+					break;
+				default:
+					printk("not PLX\n");
+					release_mem_region(plx905x_device.iophys,
+							plx905x_device.iosize);
+					return -ENODEV;
+				}
+				if (!model_okay) {
+					printk("not specified PLX\n");
+					release_mem_region(plx905x_device.iophys,
+							plx905x_device.iosize);
+					return -ENODEV;
+				}
+				printk("PCI%X rev %02X: ", (unsigned)(hidr >> 16),
+						(unsigned)hrev);
+				if (!hrev_okay) {
+					printk("bad revision\n");
+					release_mem_region(plx905x_device.iophys,
+							plx905x_device.iosize);
+					return -ENODEV;
+				}
+			}
+			/* Check EEPROM type (if specified). */
+			switch (model) {
+			case 0x9030:
+			case 0x9054:
+			case 0x9056:
+			case 0x9656:
+				switch (eeprom) {
+				case 56: /* CS56 */
+				case 256:
+				case 2048:
+				case 0:	/* default to CS56 */
+					plx905x_device.eeprom_size
+						= CS56_EEPROM_SIZE;
+					plx905x_device.eeprom_addr_len
+						= CS56_EEPROM_ADDR_LEN;
+					break;
+				case 66: /* CS66 */
+				case 512:
+				case 4096:
+					plx905x_device.eeprom_size
+						= CS66_EEPROM_SIZE;
+					plx905x_device.eeprom_addr_len
+						= CS66_EEPROM_ADDR_LEN;
+					break;
+				default: /* invalid */
+					printk("invalid EEPROM type for PLX PCI9030/9054/9056/9656\n");
+					release_mem_region(
+							plx905x_device.iophys,
+							plx905x_device.iosize);
+					return -ENODEV;
+				}
+				break;
+			case 0x9060:
+			case 0x9080:
+				/* No default EEPROM size for PCI9060/9080 */
+				switch (eeprom) {
+				case 46: /* CS46 */
+				case 128:
+				case 1024:
+					plx905x_device.eeprom_size
+						= CS46_EEPROM_SIZE;
+					plx905x_device.eeprom_addr_len
+						= CS46_EEPROM_ADDR_LEN;
+					break;
+				case 56: /* CS56 */
+				case 256:
+				case 2048:
+					plx905x_device.eeprom_size
+						= CS56_EEPROM_SIZE;
+					plx905x_device.eeprom_addr_len
+						= CS56_EEPROM_ADDR_LEN;
+					break;
+				default: /* invalid */
+					printk("must specify valid EEPROM type for PLX PCI9060/9080\n");
+					release_mem_region(
+							plx905x_device.iophys,
+							plx905x_device.iosize);
+					return -ENODEV;
+				}
+				break;
+			default:
+				printk("bug %s[%ld]\n",
+						__FILE__, (long)__LINE__);
 				release_mem_region(plx905x_device.iophys,
 						plx905x_device.iosize);
 				return -ENODEV;
@@ -564,8 +799,16 @@ plx905x_module_exit(void)
 static int
 plx905x_open(struct inode *inode, struct file *filp)
 {
-	filp->private_data = &plx905x_device;
+	struct plx905x_dev *dev = &plx905x_device;
+
+	filp->private_data = dev;
 	MOD_INC_USE_COUNT;
+	if (down_interruptible(&dev->sem)) {
+		MOD_DEC_USE_COUNT;
+		return -ERESTARTSYS;
+	}
+	eeprom_init(dev);
+	up(&dev->sem);
 	return 0;
 }
 
@@ -749,15 +992,12 @@ eeprom_cmd_read_word(struct plx905x_dev *dev, unsigned int offset, u16 *data)
 		retval = -EIO;
 		goto out;
 	}
+	cntrl |= ((EE_DI | EE_DOE) & dev->cntrl_eemask);	/* DI=1, DOE=1 */
 	/* Read 16 data bits m.s.b. first. */
 	d = 0;
 	for (i = 0; i < 16; i++) {
 		d <<= 1;
-		/* According to the datasheets for the EEPROMs, the value of
-		 * the DI signal should be irrelevant after sending the address
-		 * bits, but it needs to be set to 1 for the PLX PCI9054 to
-		 * read from even offsets in some 93CS56 EEPROMs. */
-		cntrl = (cntrl & ~EE_SK) | EE_DI; /* SK=0, DI=1 */
+		cntrl &= ~EE_SK;		/* SK=0 */
 		cntrl_write(dev, cntrl);
 		udelay(2);
 		cntrl |= EE_SK;			/* SK=1 */
@@ -814,6 +1054,19 @@ eeprom_cmd_write_disable(struct plx905x_dev *dev)
 	return 0;
 }
 
+static void
+eeprom_init(struct plx905x_dev *dev)
+{
+	u32 cn;
+
+	cn = cntrl_read(dev);
+	eeprom_end_cmd(dev, &cn);
+	cn |= EE_SK;
+	cntrl_write(dev, cn);
+	udelay(2);
+	eeprom_end_cmd(dev, &cn);
+}
+
 /* Assert CS and send start bit. */
 static void
 eeprom_start_cmd(struct plx905x_dev *dev, u32 *cntrl)
@@ -821,7 +1074,8 @@ eeprom_start_cmd(struct plx905x_dev *dev, u32 *cntrl)
 	u32 cn;
 
 	cn = cntrl_read(dev);
-	cn = EE_CS | EE_DI | (cn & ~EE_SK);	/* CS=1, DI=1, SK=0 */
+	cn = (cn & ~EE_SK) | ((EE_CS | EE_DI | EE_DOE) & dev->cntrl_eemask);
+						/* SK=0, CS=1, DI=1, DOE1=1 */
 	cntrl_write(dev, cn);
 	udelay(2);
 	cn |= EE_SK;				/* SK=1 */
@@ -836,7 +1090,8 @@ eeprom_end_cmd(struct plx905x_dev *dev, u32 *cntrl)
 {
 	u32 cn = *cntrl;
 
-	cn &= ~(EE_CS | EE_SK);			/* CS=0, SK=0 */
+	cn &= ~((EE_CS | EE_SK | EE_DI | EE_DOE) & dev->cntrl_eemask);
+						/* CS=0, SK=0, DI=0, DOE=0 */
 	cntrl_write(dev, cn);
 	udelay(2);
 	*cntrl = cn;
@@ -851,9 +1106,11 @@ eeprom_put_bits(struct plx905x_dev *dev, u32 *cntrl, unsigned int bits,
 
 	while (nbits--) {
 		if (bits & (1 << nbits)) {
-			cn |= EE_DI;			/* DI=1 */
+			cn |= ((EE_DI | EE_DOE) & dev->cntrl_eemask);
+							/* DI=1 */
 		} else {
-			cn &= ~EE_DI;			/* DI=0 */
+			cn &= ~((EE_DI | EE_DOE) & dev->cntrl_eemask);
+							/* DI=0 */
 		}
 		cn &= ~EE_SK;			/* SK=0 */
 		cntrl_write(dev, cn);
@@ -876,7 +1133,8 @@ eeprom_wait_prog(struct plx905x_dev *dev)
 
 	timeout = 1 + (((50 * HZ) + 999) / 1000);	/* ~50ms */
 	cn = cntrl_read(dev);
-	cn = EE_CS | EE_DI | (cn & ~EE_SK);	/* CS=1, DI=1, SK=0 */
+	cn = (cn & ~EE_SK) | ((EE_CS | EE_DI | EE_DOE) & dev->cntrl_eemask);
+						/* SK=0, CS=1, DI=1, DOE=1 */
 	cntrl_write(dev, cn);
 	old_jiffies = jiffies;
 	retval = -EIO;
@@ -886,14 +1144,15 @@ eeprom_wait_prog(struct plx905x_dev *dev)
 		cn = cntrl_read(dev);
 		if ((cn & EE_DO) != 0) {
 			/* Cycle complete.  Clear ready status (optional). */
-			cn |= EE_SK;		/* SK=1, (CS=1, DI=1) */
+			cn |= EE_SK;		/* SK=1 */
 			cntrl_write(dev, cn);
 			udelay(2);
 			retval = 0;
 			break;
 		}
 	} while (jiffies - old_jiffies < timeout);
-	cn &= ~(EE_CS | EE_SK);			/* CS=0, SK=0 */
+	cn &= ~((EE_CS | EE_SK | EE_DI | EE_DOE) & dev->cntrl_eemask);
+						/* CS=0, SK=0, DI=0, DOE=0 */
 	cntrl_write(dev, cn);
 	udelay(2);
 	return retval;
