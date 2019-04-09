@@ -1,14 +1,53 @@
-2002-10-24  Ian Abbott  <ian.abbott@mev.co.uk>
+2002-10-28  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* Release 1.02
+
+2002-10-28  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c: Added a module parameter 'plx' to specify the type
+	of PLX chip manually.  This affects the device type to search for when
+	the vendor and device IDs are not specified, and is also checked
+	against fixed register values for certain PLX chips.
+
+	* plx905x_main.c: Added provisional support for PLX PCI9030.  The new
+	'plx' module parameter must be used.  This is untested.
+
+	* README: Updated documentation to reflect the above changes.
+
+2002-10-25  Ian Abbott  <ian.abbott@mev.co.uk>
 
 	* Release 1.01
+
+2002-10-25  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c: Added provisional support for PLX PCI9056, PCI9060,
+        PCI9080 and PCI9656.  This is untested.
+
+        * plx905x_main.c: Added a module parameter 'eeprom' to specify the
+        size of serial EEPROM fitted.  The default EEPROM size for the PCI9054
+	is 256 bytes.
+
+	* plx905x_main.c: Check revision of PLX chip. Fail if not supported.
+	Report assumed PLX model and revision.
+
+        * README: Updated documentation to reflect the above changes.
+
+2002-10-25  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c: Added copyright, licensing and contact information.
+
+	* Makefile: ditto.
+
+        * README: ditto.
 
 2002-10-24  Ian Abbott  <ian.abbott@mev.co.uk>
 
 	* plx905x_main.c: Renamed plx9050_main.c.  Changed name of module
-	to plx905x.  Added copyright, licensing and contact information.
+	to plx905x.
 
-	* Makefile: Changes due to renamed files and module.  Added copyright,
-	licensing and contact information.
+	* Makefile: Changes due to renamed files and module.
+
+        * README: New file.  Main documentation.
 
 2002-10-08  Ian Abbott  <ian.abbott@mev.co.uk>
 

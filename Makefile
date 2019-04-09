@@ -3,7 +3,7 @@
 #
 # Written by Ian Abbott @ MEV Ltd. <ian.abbott@mev.co.uk>
 # Copyright (C) 2002 MEV Limited.
-# 
+#
 #     MEV Ltd.
 #     Suite 8 Baxall Business Centre
 #     Adswood Road Industrial Estate
@@ -11,28 +11,33 @@
 #     Cheshire
 #     SK3 8LF
 #     UNITED KINGDOM
-# 
+#
 #     Tel: +44 (0)161 477 1898
 #     Fax: +44 (0)161 718 3587
 #     WWW: http://www.mev.co.uk/
 #
 # Most of this Makefile was written by Linus Torvalds, Alessandro Rubini,
 # et al.
-# 
+#
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
 # Free Software Foundation; either version 2 of the License, or (at your
 # option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 675 Mass Ave, Cambridge, MA 02139, USA.
-# 
+#
+# As the copyright holder, MEV Limited reserves the right to re-use
+# (either directly or by license to third parties) those parts of the
+# program written by MEV Limited or its employees in other programs not
+# covered by the GNU General Public License.
+#
 # A copy of the GNU General Public License may be found in the file
 # "COPYING".
 #
