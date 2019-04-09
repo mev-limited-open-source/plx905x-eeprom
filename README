@@ -49,8 +49,8 @@ INTRODUCTION
 This is a Linux driver kernel module that provides read/write random
 access to the serial EEPROM of various PLX PCI interface chips.
 
-The driver currently supports the PCI9050, PCI9052 and PCI9054 (revision
-A or later) chips.  The driver may also support the PCI9030, PCI9056,
+The driver currently supports the PCI9030, PCI9050, PCI9052 and PCI9054
+(revision A or later) chips.  The driver may also support the PCI9056,
 PCI9060, PCI9080 and PCI9656, but this is so far untested.
 
 For the PCI9050 and PCI9052, the serial EEPROM is presented as a file
@@ -179,16 +179,16 @@ eeprom=n  This specifies the size of serial EEPROM fitted.  The values
         (128 bytes) or 2048 bits (256 bytes) and there is no default.
 
 plx=n   This specifies the PLX chip type.  The default value is '0',
-        which causes the driver to attempt to guess the chip type.  For
-        the PCI9030, 'plx' may be set to '0x9030' or '9030', but not
-        '0'.  For the PCI9050 and PCI9052, 'plx' may be set to '0x9050',
-        '9050', '0x9052', '9052' or '0'; the PCI9050 and PCI9052 are
-        equivalent as far as this driver is concerned.  For the PCI9054,
-        'plx' may be set to '0x9054', '9054' or '0'.  For the PCI9056,
-        'plx' may be set to '0x9056', '9056' or '0'.  For the PCI9060,
-        'plx' may be set to '0x9060', '9060' or '0'.  For the PCI9080,
-        'plx' may be set to '0x9080', '9080' or '0'.  For the PCI9656,
-        'plx' may be set to '0x9656', '9656' or '0'.
+	which causes the driver to attempt to guess the chip type.  For
+	the PCI9030, 'plx' may be set to '0x9030', '9030' or '0'.  For
+	the PCI9050 and PCI9052, 'plx' may be set to '0x9050', '9050',
+	'0x9052', '9052' or '0'; the PCI9050 and PCI9052 are equivalent
+	as far as this driver is concerned.  For the PCI9054, 'plx' may
+	be set to '0x9054', '9054' or '0'.  For the PCI9056, 'plx' may
+	be set to '0x9056', '9056' or '0'.  For the PCI9060, 'plx' may
+	be set to '0x9060', '9060' or '0'.  For the PCI9080, 'plx' may
+	be set to '0x9080', '9080' or '0'.  For the PCI9656, 'plx' may
+	be set to '0x9656', '9656' or '0'.
 
 If the 'bus' or 'slot' parameters are non-zero, the PCI device at the
 specified location is matched against the 'vendor', 'device',

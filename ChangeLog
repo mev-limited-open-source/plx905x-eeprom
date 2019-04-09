@@ -1,3 +1,20 @@
+2003-01-31  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* Release 1.04
+
+2003-01-31  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c (plx905x_module_init): Corrected PCI9030 detection.
+	Local configuration register area was tested for the wrong size.  The
+	correct size is 128 (as for PCI9050), not 256 (as for PCI9054).  As a
+	result, a test has been added to distinguish PCI9030 from PCI9050 and
+	PCI9052 and various bits of code have been moved around.  Also, the
+	PCI9052 is now reported as revision 1, rather than revision 2.
+
+	* README: Updated as PCI9030 has now been tested.  Also, the 'plx'
+	module parameter no longer needs to be set for the PCI9030 to be
+	distinguished from other supported chips.
+
 2002-11-13  Ian Abbott  <ian.abbott@mev.co.uk>
 
 	* Release 1.03
