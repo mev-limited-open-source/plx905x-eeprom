@@ -147,9 +147,9 @@
 
 #define DRIVER_NAME	"plx905x"
 #define DRIVER_DESC	"PLX PCI905x Serial EEPROM Driver"
-/* Version 1.02 */
+/* Version 1.03 */
 #define DRIVER_VER_MAJOR	1
-#define DRIVER_VER_MINOR	2
+#define DRIVER_VER_MINOR	3
 #define DRIVER_VER_SUF		""
 #ifdef PLX905X_DEBUG
 #define DRIVER_VER_DEBUG_SUF	"-DEBUG"
@@ -176,6 +176,8 @@
 #define PLX9054_DEVICE_ID	0x9054
 #define PLX9056_DEVICE_ID	0x9056
 #define PLX9060_DEVICE_ID	0x9060
+#define PLX9060SD_DEVICE_ID	0x906D
+#define PLX9060ES_DEVICE_ID	0x906E
 #define PLX9080_DEVICE_ID	0x9080
 #define PLX9656_DEVICE_ID	0x9656
 #define DEFAULT_DEVICE_ID	PLX9050_DEVICE_ID
@@ -184,6 +186,8 @@
 #define PLX9054_PCIHIDR_VALUE	0x905410B5
 #define PLX9056_PCIHIDR_VALUE	0x905610B5
 #define PLX9060_PCIHIDR_VALUE	0x906010B5
+#define PLX9060SD_PCIHIDR_VALUE	0x906D10B5
+#define PLX9060ES_PCIHIDR_VALUE	0x906E10B5
 #define PLX9080_PCIHIDR_VALUE	0x908010B5
 #define PLX9656_PCIHIDR_VALUE	0x965610B5
 
@@ -554,6 +558,7 @@ plx905x_module_init(void)
 				u32 hidr;
 				u8 hrev;
 				int hrev_okay = 0;
+				char *suffix = "";
 
 				plx905x_device.cntrl = PLX9054_CNTRL;
 				hidr = readl(plx905x_device.iobase + PLX9054_PCIHIDR);
@@ -580,7 +585,14 @@ plx905x_module_init(void)
 					}
 					hrev_okay = 1;
 					break;
+				case PLX9060SD_PCIHIDR_VALUE:
+					suffix = "SD";
+					goto hidr_plx9060;
+				case PLX9060ES_PCIHIDR_VALUE:
+					suffix = "ES";
+					goto hidr_plx9060;
 				case PLX9060_PCIHIDR_VALUE:
+			hidr_plx9060:
 					model = 0x9060;
 					if ((plx == 0x9060) || (plx == 9060)) {
 						model_okay = 1;
@@ -604,6 +616,16 @@ plx905x_module_init(void)
 						hrev_okay = 1;
 					}
 					break;
+				case 0:
+					/* May be a PCI9060 */
+					if ((plx == 0x9060) || (plx == 9060)) {
+						/* Believe kernel parameter. */
+						model = 0x9060;
+						model_okay = 1;
+						hrev_okay = 1;
+						break;
+					}
+					/* Else fall through to default.... */
 				default:
 					printk("not PLX\n");
 					release_mem_region(plx905x_device.iophys,
@@ -616,8 +638,9 @@ plx905x_module_init(void)
 							plx905x_device.iosize);
 					return -ENODEV;
 				}
-				printk("PCI%X rev %02X: ", (unsigned)(hidr >> 16),
-						(unsigned)hrev);
+				printk("PCI%X%s rev %02X: ",
+						(unsigned)(hidr >> 16),
+						suffix, (unsigned)hrev);
 				if (!hrev_okay) {
 					printk("bad revision\n");
 					release_mem_region(plx905x_device.iophys,
