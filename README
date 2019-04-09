@@ -1,0 +1,249 @@
+                    PLX PCI905x Serial EEPROM Driver
+
+
+COPYRIGHT AND LICENSE
+
+PLX PCI905x Serial EEPROM Driver.
+Written by Ian Abbott @ MEV Ltd. <ian.abbott@mev.co.uk>.
+Copyright (C) 2002 MEV Limited.
+
+    MEV Ltd.
+    Suite 8 Baxall Business Centre
+    Adswood Road Industrial Estate
+    Stockport
+    Cheshire
+    SK3 8LF
+    UNITED KINGDOM
+
+    Tel: +44 (0)161 477 1898
+    Fax: +44 (0)161 718 3587
+    WWW: http://www.mev.co.uk/
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+A copy of the GNU General Public License may be found in the file
+"COPYING".
+
+Please note that PLX Technology, Inc. have no connection to this driver.
+
+
+INTRODUCTION
+
+This is a Linux driver kernel module that provides read/write random
+access to the serial EEPROM of various PLX PCI interface chips.
+
+The driver currently supports the PCI9050, PCI9052 and PCI9054 (revision
+A or later) chips.
+
+For the PCI9050 and PCI9052, the serial EEPROM is presented as a file
+128 bytes long.
+
+For the PCI9054, the serial EEPROM is presented as a file 512 bytes
+long.  If a 2048-bit (256-byte) EEPROM is fitted, the upper 256 bytes
+will alias the lower 256 bytes.
+
+Each 16-bit word of the serial EEPROM appears as two bytes in
+little-endian order; even offsets address the least significant byte of
+the 16-bit word and odd offsets address the most significant byte.
+Reads and writes may start on an even or odd offset and the number of
+bytes transferred may be even or odd.
+
+The driver only supports a single device at a time.  Module parameters
+are used to select the device on driver load.
+
+
+USAGE
+
+Building
+
+First compile the module using the provided Makefile.  It will be
+necessary to compile the module such that it matches the kernel in which
+it is to be loaded at run-time.  It may be necessary to install kernel
+sources matching the currently running kernel, configure the kernel
+sources to match the currently running kernel and perform a 'make dep'
+operation on the kernel sources.  If necessary, the top directory for
+the kernel sources can be specified in the 'TOPDIR' variable when
+invoking 'make' for this driver, e.g.:
+
+    make TOPDIR=/usr/src/linux
+
+
+Preparing to load
+
+Next become root and load the module with any optional parameters
+required (see below).  If any other drivers are using the PCI card, it
+may be necessary to unload them first using 'rmmod' if the driver is a
+kernel module.  (If the driver is not a kernel module, you may need to
+rebuild the kernel without support for the PCI card in question.)
+
+Before loading the module, identify the PCI card using the 'lspci'
+command.  The left hand column shows the positions of installed PCI
+devices in 'bus:slot.func' form, where 'bus' is two hex digits, 'slot'
+is two hex digits in the range 00 to 1f, and 'func' is one hex digit in
+the range 0 to 7.  The driver does not support multi-function PCI
+devices, so the 'func' number will only be 0 for PCI devices of interest
+to the driver.  The remaining columns identify the device using text
+strings.  If 'lspci -n' is used, the remaining columns will identify the
+device numerically by class and a 'vendor:device' pair, where 'vendor'
+is the PCI vendor ID aand 'device' is the PCI device ID, both expressed
+as four hex digits.  More detailed information including PCI subsystem
+ID information can be obtained by running 'lspci -v' or 'lspci -vn'.
+The latter version will show the subsystem vendor ID and device ID in
+hex.
+
+
+Loading
+
+The module should be loaded using the 'insmod' command, as follows:
+
+   insmod plx905x.o [param=value] ...
+
+where '[param=value] ...' is the start-up parameters for the module used
+to select the PCI device to be used and set the major device number for
+the driver.
+
+The following parameters may be used.  Values specified on the command
+line after the 'param=' will be treated as hex if they begin with '0x',
+octal if they begin with '0' or decimal if they begin with '1' through
+'9'.  Typically, PCI IDs are specified in hex.  Bus and slot numbers may
+be specified in hex to match the bus and slot numbers shown by 'lspci'
+or may be specified in decimal.
+
+major=n  This sets the major device number of the driver.  The default
+        value is 0 which causes the major device number to be assigned
+        dynamically.
+
+bus=n   This selects the PCI bus number of the device, range 0 to 255.
+        The default is 0.
+
+slot=n  This selects the PCI slot number of the device, range 0 to 31.
+        The default is 0.
+
+vendor=n  This selects the PCI vendor ID of the device.  The default is
+        -1, which means "any" PCI vendor ID, but see below.
+
+device=n  This selects the PCI device ID of the device.  The default is
+        -1, which means "any" PCI device ID, but see below.
+
+subvendor=n  This selects the PCI subsystem vendor ID of the device.
+        The default is -1, which means "any" PCI subsystem vendor ID,
+        but see below.
+
+subdevice=n  This selects the PCI subsystem device ID of the device.
+        The default is -1, which means "any" PCI subsystem device ID,
+        but see below.
+
+instance=n  This selects the nth matching PCI device matching the
+        'vendor', 'device', 'subvendor' and 'subdevice' parameters,
+        counting from 0.  The default is 0.  This parameter is ignored
+        when the 'bus' or 'slot' parameter has been set to a non-zero
+        value.
+
+If the 'bus' or 'slot' parameters are non-zero, the PCI device at the
+specified location is matched against the 'vendor', 'device',
+'subvendor' and 'subdevice' parameters if they are set to their
+non-default values.  In this case, the 'vendor' or 'device' parameter's
+default value loses its special meaning of "any" if the other parameter
+has a non-default parameter.  This is also true for the 'subvendor' and
+'subdevice' parameters.  The 'instance' parameter is ignored in this
+case.
+
+If the 'bus' and 'slot' parameters are both set to the default value of
+0, the entire list of installed PCI devices is searched for a match.
+However, note that in this case, if 'vendor' and 'device' are both set
+to the default value of -1, then the following values are assumed:
+'vendor=0x10b5', 'device=0x9050'.  These values will match the factory
+default PCI vendor and device ID for the PLX PCI9050 or PCI9052.  The
+'subvendor' and 'subdevice' parameters remain unaltered.
+
+The module will fail to load if a matching device cannot be found at the
+specified localtion (if specified).  It will also fail to load if the
+device does not appear to be supported or if there is a resource
+conflict with another driver using the PCI device.  The check for a
+supported device is more robust for the PCI9054 than for the PCI9050 and
+PCI9052, but is not absolutely reliable.  Be careful with those
+parameters!
+
+The module outputs a kernel message on loading that indicates which PCI
+device is being used (if any), a reason why the module could not be
+loaded (if any) and the major device number assigned to the driver (if
+successfully loaded).  Recent kernel messages may be examined using the
+'dmesg' command.
+
+
+Using
+
+A 'character special' file with the correct major device number is
+required.  The driver currently ignores the minor device number but it
+is suggested that the special file has this set to 0.
+
+If the major device number was set dynamically by loading the module
+without setting a value for the 'major' parameter or by setting it to 0,
+the major device number can be determined by examining the
+'/proc/devices' file or by checking the kernel message output by the
+module when it was loaded (for example by using the 'dmesg' command).
+
+Once the major device number is known, the character special file may be
+created with the 'mknod' command.  In this example a character special
+file named 'dev/plx905x' is created with major device number 254 and
+minor device number 0:
+
+    mknod /dev/plx905x c 254 0
+
+Byte offsets in the file map onto byte offsets in the serial EEPROM.
+The serial EEPROM has 16-bit words.  The least significant byte of each
+16-bit word has a byte offset evenly divisible by 2.  In other words,
+the 16-bit words are mapped onto byte offsets in little-endian order.
+
+For the PCI9050 and PCI9052, the serial EEPROM is 128 bytes (1024 bits,
+64 words) long.  For the PCI9054, the serial EEPROM is considered to be
+512 bytes (4096 bits, 256 words) long even if a 2048-bit serial EEPROM
+is fitted.  If a 2048-bit serial EEPROM is fitted, the contents are
+mapped twice over into the address space, in other words the second 256
+bytes are a copy of the first 256 bytes.
+
+The file supports open, close, read, write and seek operations.
+Attempts to seek outside the confines of the address space (128 bytes
+for the PCI9050 and PCI9052, 512 bytes for the PCI9054) are errored with
+EINVAL.  Attempts to write starting at the end of the address space are
+errored with ENOSPC.  An end-of-file condition is returned when
+attempting to read from the end of the address space.  Problems
+physically reading or writing the EEPROM are errored with EIO.
+
+
+Examples
+
+The entire address space of the serial EEPROM may be read and redirected
+to a file using the 'cat' command and shell redirection:
+
+    cat /dev/plx905x > dump.bin
+
+For the PCI9054, if you just want the first 256 bytes (because a
+2048-bit EEPROM is fitted, say), the 'dd' command may be used:
+
+    dd if=/dev/plx905x of=dump.bin bs=256 count=1
+
+The 'cat' command and shell redirection may be used to rewrite the
+entire serial EEPROM using the contents of a regular file:
+
+    cat dump.bin > /dev/plx905x
+
+The 'dd' command may be used to selectively read or write parts of the
+serial EEPROM.  It's probably easiest to set the block size to 1
+('bs=1'), 'count' to the number of bytes to be read and written, 'seek'
+to the byte offset within the output file to start writing, and 'skip'
+to the byte offset within the input file to start reading.  See the
+'dd(1)' manpage for details ('man 1 dd').
+
