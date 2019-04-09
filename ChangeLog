@@ -1,0 +1,16 @@
+2002-10-24  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* Release 1.01
+
+2002-10-24  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c: Renamed plx9050_main.c.  Changed name of module
+	to plx905x.  Added copyright, licensing and contact information.
+
+	* Makefile: Changes due to renamed files and module.  Added copyright,
+	licensing and contact information.
+
+2002-10-08  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx9050_main.c: Added support for PLX PCI9054.
+
