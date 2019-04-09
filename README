@@ -248,13 +248,6 @@ The serial EEPROM has 16-bit words.  The least significant byte of each
 16-bit word has a byte offset evenly divisible by 2.  In other words,
 the 16-bit words are mapped onto byte offsets in little-endian order.
 
-For the PCI9050 and PCI9052, the serial EEPROM is 128 bytes (1024 bits,
-64 words) long.  For the PCI9054, the serial EEPROM is considered to be
-512 bytes (4096 bits, 256 words) long even if a 2048-bit serial EEPROM
-is fitted.  If a 2048-bit serial EEPROM is fitted, the contents are
-mapped twice over into the address space, in other words the second 256
-bytes are a copy of the first 256 bytes.
-
 The file supports open, close, read, write and seek operations.
 Attempts to seek outside the confines of the address space (128, 256 or
 512 bytes, depending on the EEPROM size specified or defaulted to) are

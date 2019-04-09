@@ -1,3 +1,18 @@
+2002-11-13  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* Release 1.03
+
+2002-11-13  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* README: Removed a redundant (and misleading) paragraph.
+
+2002-10-31  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c (plx905x_module_init): Added check for PLX PCI9060ES
+	and PCI9060DS.  Relaxed the check for PCI9060 when the 'plx' parameter
+	is used, as the PCI9060 sometimes has 0 in its hardware ID register.
+	N.B. support for PCI9060 is still untested.
+
 2002-10-28  Ian Abbott  <ian.abbott@mev.co.uk>
 
 	* Release 1.02
