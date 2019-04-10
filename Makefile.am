@@ -11,7 +11,7 @@ AUTOMAKE_OPTIONS = 1.5 check-news dist-bzip2
 ## "maintainer" level, rather than at the "configure" level, then they
 ## would stick around after a 'make distclean'.
 EXTRA_DIST =  AUTHORS COPYING ChangeLog ChangeLog-1.xx README \
-	      autogen.sh dkms.conf
+	      autogen.sh dkms.conf .gitignore
 
 SUBDIRS = driver
 
