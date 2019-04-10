@@ -304,7 +304,7 @@ the driver.
 If the module has been installed by `make install`, the module can be
 loaded by a super user using the `modprobe` command:
 
-    modprobe plx905x [param=value]
+    modprobe plx905x [param=value] ...
 
 The following parameters may be used.  Values specified on the command
 line after the `param=` will be treated as hex if they begin with `0x`,
