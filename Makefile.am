@@ -10,7 +10,7 @@ AUTOMAKE_OPTIONS = 1.5 check-news dist-bzip2
 ## It would be nice if there was a simple way to create the files at
 ## "maintainer" level, rather than at the "configure" level, then they
 ## would stick around after a 'make distclean'.
-EXTRA_DIST =  AUTHORS COPYING ChangeLog ChangeLog-1.xx README \
+EXTRA_DIST =  AUTHORS COPYING ChangeLog ChangeLog-1.xx README.md \
 	      autogen.sh dkms.conf .gitignore
 
 SUBDIRS = driver
