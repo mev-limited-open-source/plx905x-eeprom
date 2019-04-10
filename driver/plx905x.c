@@ -731,6 +731,10 @@ plx905x_module_init(void)
 			/* Found required instance. */
 			break;
 		}
+		if (bus || slot) {
+			/* Ignore instance if bus or slot specified. */
+			break;
+		}
 	}
 
 	if (!pcidev) {
