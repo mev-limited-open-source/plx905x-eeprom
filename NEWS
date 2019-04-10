@@ -1,0 +1,34 @@
+Version 1.04 2003-01-31
+============
+
+Corrects detection of PLX PCI9030 which has now been tested.  The 'plx'
+module parameter no longer needs to be set to distinguish the PCI9030
+from other supported chips.  The PCI9052 is now reported as revision 1
+rather than revision 2.
+
+
+Version 1.03 2002-11-13
+============
+
+Adds check for PLX PCI9060ES and PCI9060DS.  Relaxes the check for
+PCI9060 when the 'plx' parameter is used, as the PCI9060 sometimes has 0
+in its hardware ID register.  Support for PCI9060 is still untested.
+
+
+Version 1.02 2002-10-28
+============
+
+Adds a module parameter 'plx' to specify the type of PLX chip manually.
+This affects the device type to search for when the vendor and device
+IDs are not specified, and is also checked against fixed register values
+for certain PLX chips.
+
+Adds provisional support for PLX PCI9030.  The new 'plx' module
+parameter must be used.  This is untested.
+
+
+Version 1.01 2002-10-25
+============
+
+Supports PLX PCI9050, PCI9052, PCI9054.  Has provisional support for PLX
+PCI9056, PCI9060, PCI9080 and PCI9656, but those are untested.
