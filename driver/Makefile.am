@@ -34,7 +34,7 @@ $(automake_dummy_SOURCES): FORCE
 $(module_DATA): $(generated_sources) $(automake_dummy_SOURCES) FORCE
 	mv Makefile Makefile.automake
 	cp Makefile.kernel Makefile
-	$(MAKE) -C $(KERNEL_LOCATION) M=$(PLX905X_BUILDDIR) SUBDIRS=$(PLX905X_BUILDDIR) M=$(PLX905X_BUILDDIR) modules
+	$(MAKE) -C $(KERNEL_LOCATION) SUBDIRS=$(PLX905X_BUILDDIR) M=$(PLX905X_BUILDDIR) modules
 	mv Makefile.automake Makefile
 
 install-moduleDATA: $(module_DATA)
