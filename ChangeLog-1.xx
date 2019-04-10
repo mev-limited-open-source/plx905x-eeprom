@@ -1,0 +1,87 @@
+2003-01-31  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* Release 1.04
+
+2003-01-31  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c (plx905x_module_init): Corrected PCI9030 detection.
+	Local configuration register area was tested for the wrong size.  The
+	correct size is 128 (as for PCI9050), not 256 (as for PCI9054).  As a
+	result, a test has been added to distinguish PCI9030 from PCI9050 and
+	PCI9052 and various bits of code have been moved around.  Also, the
+	PCI9052 is now reported as revision 1, rather than revision 2.
+
+	* README: Updated as PCI9030 has now been tested.  Also, the 'plx'
+	module parameter no longer needs to be set for the PCI9030 to be
+	distinguished from other supported chips.
+
+2002-11-13  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* Release 1.03
+
+2002-11-13  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* README: Removed a redundant (and misleading) paragraph.
+
+2002-10-31  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c (plx905x_module_init): Added check for PLX PCI9060ES
+	and PCI9060DS.  Relaxed the check for PCI9060 when the 'plx' parameter
+	is used, as the PCI9060 sometimes has 0 in its hardware ID register.
+	N.B. support for PCI9060 is still untested.
+
+2002-10-28  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* Release 1.02
+
+2002-10-28  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c: Added a module parameter 'plx' to specify the type
+	of PLX chip manually.  This affects the device type to search for when
+	the vendor and device IDs are not specified, and is also checked
+	against fixed register values for certain PLX chips.
+
+	* plx905x_main.c: Added provisional support for PLX PCI9030.  The new
+	'plx' module parameter must be used.  This is untested.
+
+	* README: Updated documentation to reflect the above changes.
+
+2002-10-25  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* Release 1.01
+
+2002-10-25  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c: Added provisional support for PLX PCI9056, PCI9060,
+        PCI9080 and PCI9656.  This is untested.
+
+        * plx905x_main.c: Added a module parameter 'eeprom' to specify the
+        size of serial EEPROM fitted.  The default EEPROM size for the PCI9054
+	is 256 bytes.
+
+	* plx905x_main.c: Check revision of PLX chip. Fail if not supported.
+	Report assumed PLX model and revision.
+
+        * README: Updated documentation to reflect the above changes.
+
+2002-10-25  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c: Added copyright, licensing and contact information.
+
+	* Makefile: ditto.
+
+        * README: ditto.
+
+2002-10-24  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx905x_main.c: Renamed plx9050_main.c.  Changed name of module
+	to plx905x.
+
+	* Makefile: Changes due to renamed files and module.
+
+        * README: New file.  Main documentation.
+
+2002-10-08  Ian Abbott  <ian.abbott@mev.co.uk>
+
+	* plx9050_main.c: Added support for PLX PCI9054.
+
