@@ -8,16 +8,16 @@ PLX PCI905x Serial EEPROM Driver.
 Written by Ian Abbott @ MEV Limited <abbotti@mev.co.uk>.
 Copyright (C) 2002, 2019 MEV Limited.
 
-   > MEV Limited                                                  <br>
-   > Building 67                                                  <br>
-   > Europa Business Park                                         <br>
-   > Bird Hall Lane                                               <br>
-   > STOCKPORT                                                    <br>
-   > SK3 0XA                                                      <br>
-   > UNITED KINGDOM                                               <br>
+   > MEV Limited  
+   > Building 67  
+   > Europa Business Park  
+   > Bird Hall Lane  
+   > STOCKPORT  
+   > SK3 0XA  
+   > UNITED KINGDOM  
 
-   > Tel: +44 (0)161 477 1898                                     <br>
-   > WWW: <https://www.mev.co.uk/>                                <br>
+   > Tel: +44 (0)161 477 1898  
+   > WWW: <https://www.mev.co.uk/>  
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -274,19 +274,18 @@ rebuild the kernel without support for the PCI card in question.)
 
 Before loading the module, identify the PCI card using the `lspci`
 command.  The left hand column shows the positions of installed PCI
-devices in 'domain:bus:slot.func' form, where 'domain' is four hex digits,
-'bus' is two hex digits, 'slot'
-is two hex digits in the range 00 to 1f, and 'func' is one hex digit in
-the range 0 to 7.  The driver does not support multi-function PCI
-devices, so the 'func' number will only be 0 for PCI devices of interest
-to the driver.  The remaining columns identify the device using text
-strings.  If `lspci -n` is used, the remaining columns will identify the
-device numerically by class and a 'vendor:device' pair, where 'vendor'
-is the PCI vendor ID and 'device' is the PCI device ID, both expressed
-as four hex digits.  More detailed information including PCI subsystem
-ID information can be obtained by running `lspci -v` or `lspci -vn`.
-The latter version will show the subsystem vendor ID and device ID in
-hex.
+devices in 'domain:bus:slot.func' form, where 'domain' is four hex
+digits, 'bus' is two hex digits, 'slot' is two hex digits in the range
+00 to 1f, and 'func' is one hex digit in the range 0 to 7.  The driver
+does not support multi-function PCI devices, so the 'func' number will
+only be 0 for PCI devices of interest to the driver.  The remaining
+columns identify the device using text strings.  If `lspci -n` is used,
+the remaining columns will identify the device numerically by class and
+a 'vendor:device' pair, where 'vendor' is the PCI vendor ID and 'device'
+is the PCI device ID, both expressed as four hex digits.  More detailed
+information including PCI subsystem ID information can be obtained by
+running `lspci -v` or `lspci -vn`.  The latter version will show the
+subsystem vendor ID and device ID in hex.
 
 ### Loading
 
@@ -313,60 +312,57 @@ octal if they begin with `0` or decimal if they begin with `1` through
 be specified in hex to match the bus and slot numbers shown by `lspci`
 or may be specified in decimal.
 
-* `major=n` -- This sets the major device number of the driver.  The default
-  value is 0 which causes the major device number to be assigned
+* `major=n` -- This sets the major device number of the driver.  The
+  default value is 0 which causes the major device number to be assigned
   dynamically.
 
-* `bus=n` -- This selects the PCI bus number of the device, range 0 to 255.
-  The default is 0.
+* `bus=n` -- This selects the PCI bus number of the device, range 0 to
+  255.  The default is 0.
 
-* `slot=n` -- This selects the PCI slot number of the device, range 0 to 31.
-  The default is 0.
+* `slot=n` -- This selects the PCI slot number of the device, range 0 to
+  31.  The default is 0.
 
-* `vendor=n` --  This selects the PCI vendor ID of the device.  The default is
-  -1, which means "any" PCI vendor ID, but see below.
+* `vendor=n` --  This selects the PCI vendor ID of the device.  The
+  default is -1, which means "any" PCI vendor ID, but see below.
 
-* `device=n` -- This selects the PCI device ID of the device.  The default is
-  -1, which means "any" PCI device ID, but see below.
+* `device=n` -- This selects the PCI device ID of the device.  The
+  default is -1, which means "any" PCI device ID, but see below.
 
-* `subvendor=n` --  This selects the PCI subsystem vendor ID of the device.
-  The default is -1, which means "any" PCI subsystem vendor ID,
+* `subvendor=n` --  This selects the PCI subsystem vendor ID of the
+  device.  The default is -1, which means "any" PCI subsystem vendor ID,
   but see below.
 
-* `subdevice=n` -- This selects the PCI subsystem device ID of the device.
-  The default is -1, which means "any" PCI subsystem device ID,
+* `subdevice=n` -- This selects the PCI subsystem device ID of the
+  device.  The default is -1, which means "any" PCI subsystem device ID,
   but see below.
 
 * `instance=n` -- This selects the nth matching PCI device matching the
-  `vendor`, `device`, `subvendor` and `subdevice` parameters,
-   counting from 0.  The default is 0.  This parameter is ignored
-   when the `bus` or `slot` parameter has been set to a non-zero
-   value.
+  `vendor`, `device`, `subvendor` and `subdevice` parameters, counting
+  from 0.  The default is 0.  This parameter is ignored when the `bus`
+  or `slot` parameter has been set to a non-zero value.
 
-* `eeprom=n` -- This specifies the size of serial EEPROM fitted.  The values
-   `46`, `128` or `1024` specify a 1024-bit (128-byte) serial
-   EEPROM.  The values `56`, `256` or `2048` specify a 2048-bit
-   (256-byte) serial EEPROM.  The values `66`, `512` or `4096`
-   specify a 4096-bit (512-byte) serial EEPROM.  The default
-   depends on the PLX model of the target PCI device.  For the PLX
-   PCI9050 and PCI9052, the default is 1024 bits (128 bytes) and
-   this is the only size allowed.  For the PLX PCI9030, PCI9054,
-   PCI9056 and PCI9656, the default is 2048 bits (256 bytes), but a
-   size of 4096 bits (512 bytes) is also allowed.  For the PLX
-   PCI9060 and PCI9080, the size must be specified as 1024 bits
-   (128 bytes) or 2048 bits (256 bytes) and there is no default.
+* `eeprom=n` -- This specifies the size of serial EEPROM fitted.  The
+  values `46`, `128` or `1024` specify a 1024-bit (128-byte) serial
+  EEPROM.  The values `56`, `256` or `2048` specify a 2048-bit
+  (256-byte) serial EEPROM.  The values `66`, `512` or `4096` specify a
+  4096-bit (512-byte) serial EEPROM.  The default depends on the PLX
+  model of the target PCI device.  For the PLX PCI9050 and PCI9052, the
+  default is 1024 bits (128 bytes) and this is the only size allowed.
+  For the PLX PCI9030, PCI9054, PCI9056 and PCI9656, the default is 2048
+  bits (256 bytes), but a size of 4096 bits (512 bytes) is also allowed.
+  For the PLX PCI9060 and PCI9080, the size must be specified as 1024
+  bits (128 bytes) or 2048 bits (256 bytes) and there is no default.
 
-* `plx=n` -- This specifies the PLX chip type.  The default value is `0`,
-	which causes the driver to attempt to guess the chip type.  For
-	the PCI9030, `plx` may be set to `0x9030`, `9030` or `0`.  For
-	the PCI9050 and PCI9052, `plx` may be set to `0x9050`, `9050`,
-	`0x9052`, `9052` or `0`; the PCI9050 and PCI9052 are equivalent
-	as far as this driver is concerned.  For the PCI9054, `plx` may
-	be set to `0x9054`, `9054` or `0`.  For the PCI9056, `plx` may
-	be set to `0x9056`, `9056` or `0`.  For the PCI9060, `plx` may
-	be set to `0x9060`, `9060` or `0`.  For the PCI9080, `plx` may
-	be set to `0x9080`, `9080` or `0`.  For the PCI9656, `plx` may
-	be set to `0x9656`, `9656` or `0`.
+* `plx=n` -- This specifies the PLX chip type.  The default value is
+  `0`, which causes the driver to attempt to guess the chip type.  For
+  the PCI9030, `plx` may be set to `0x9030`, `9030` or `0`.  For the
+  PCI9050 and PCI9052, `plx` may be set to `0x9050`, `9050`, `0x9052`,
+  `9052` or `0`; the PCI9050 and PCI9052 are equivalent as far as this
+  driver is concerned.  For the PCI9054, `plx` may be set to `0x9054`,
+  `9054` or `0`.  For the PCI9056, `plx` may be set to `0x9056`, `9056`
+  or `0`.  For the PCI9060, `plx` may be set to `0x9060`, `9060` or `0`.
+  For the PCI9080, `plx` may be set to `0x9080`, `9080` or `0`.  For the
+  PCI9656, `plx` may be set to `0x9656`, `9656` or `0`.
 
 If the `bus` or `slot` parameters are non-zero, the PCI device at the
 specified location is matched against the `vendor`, `device`,
@@ -410,17 +406,17 @@ A 'character special' file with the correct major device number is
 required.  The driver currently ignores the minor device number but it
 is suggested that the special file has this set to 0.
 
-On modern systems with a dynamic `/dev` directory, the special file 
-`/dev/plx905x` is created automatically and the remainder of this section
-may be skipped.  On systems with a static `/dev`
-directory, it needs to be created manually using the `mknod` command as
-described below.
+On modern systems with a dynamic `/dev` directory, the special file
+`/dev/plx905x` is created automatically and the remainder of this
+section may be skipped.  On systems with a static `/dev` directory, it
+needs to be created manually using the `mknod` command as described
+below.
 
 ##### Creating the device file manually
 
 If the major device number was set dynamically by loading the module
-without setting a value for the `major` parameter or by setting it to `0`,
-the major device number can be determined by examining the
+without setting a value for the `major` parameter or by setting it to
+`0`, the major device number can be determined by examining the
 `/proc/devices` file or by checking the kernel message output by the
 module when it was loaded (for example by using the `dmesg` command).
 
@@ -438,13 +434,14 @@ The serial EEPROM has 16-bit words.  The least significant byte of each
 16-bit word has a byte offset evenly divisible by 2.  In other words,
 the 16-bit words are mapped onto byte offsets in little-endian order.
 
-The file supports `open`, `close`, `read`, `write` and `lseek` operations.
-Attempts to seek outside the confines of the address space (128, 256 or
-512 bytes, depending on the EEPROM size specified or defaulted to) are
-errored with `EINVAL`.  Attempts to write starting at the end of the
-address space are errored with `ENOSPC`.  An end-of-file condition is
-returned when attempting to read from the end of the address space.
-Problems physically reading or writing the EEPROM are errored with `EIO`.
+The file supports `open`, `close`, `read`, `write` and `lseek`
+operations.  Attempts to seek outside the confines of the address space
+(128, 256 or 512 bytes, depending on the EEPROM size specified or
+defaulted to) are errored with `EINVAL`.  Attempts to write starting at
+the end of the address space are errored with `ENOSPC`.  An end-of-file
+condition is returned when attempting to read from the end of the
+address space.  Problems physically reading or writing the EEPROM are
+errored with `EIO`.
 
 
 ### Examples
