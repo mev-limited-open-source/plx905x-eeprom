@@ -472,3 +472,16 @@ After use, the module may be unloaded from the kernel using `rmmod`:
 
 Changes to the EEPROM will not affect the PCI card until the system is
 rebooted.
+
+
+SOFTWARE INFORMATION
+--------------------
+
+The project is hosted in a [Git][1] repository by [GitHub][2] at
+<https://github.com/mev-limited-open-source/plx905x-eeprom>.  Tar-balls
+for release 2.0 onwards may be found there.  Previous releases 1.01,
+1.02, 1.03 and 1.04 are tagged in the Git repository.  Please contact
+the author by e-mail if tar-balls for those releases are required.
+
+[1]: https://git-scm.com
+[2]: https://github.com
