@@ -917,7 +917,7 @@ plx905x_module_init(void)
 				hrev_okay = 1;
 				break;
 			}
-			/* Else fall through to default.... */
+			/* Else fall through. */
 		default:
 			pr_err("not PLX\n");
 			goto out_fail_plx_model;
