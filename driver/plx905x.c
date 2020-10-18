@@ -823,8 +823,7 @@ plx905x_module_init(void)
 			goto out_fail_request_region;
 		}
 		plx905x_device.u.mmbase =
-			ioremap_nocache(plx905x_device.iophys,
-					plx905x_device.iosize);
+			ioremap(plx905x_device.iophys, plx905x_device.iosize);
 		if (plx905x_device.u.mmbase == 0) {
 			pr_err("cannot map I/O mem\n");
 			rc = -ENOMEM;
