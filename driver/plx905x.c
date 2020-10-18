@@ -66,6 +66,7 @@
 #include <linux/pci.h>
 #include <linux/errno.h>
 #include <linux/stat.h>
+#include <asm/io.h>
 
 #define KCOMPAT_DEFINE_CLASS_DEVICE_CREATE	/* For various 2.6.x */
 
