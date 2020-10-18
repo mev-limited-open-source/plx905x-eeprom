@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (C) 2015-2019 MEV Ltd.
 
 AC_PREREQ([2.69])
-AC_INIT([PLX PCI905x Serial EEPROM Driver],[2.0],[abbotti@mev.co.uk],[plx905x-eeprom])
+AC_INIT([PLX PCI905x Serial EEPROM Driver],[2.0.1],[abbotti@mev.co.uk],[plx905x-eeprom])
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE([enable])
 AC_CONFIG_HEADERS([plx905x-eeprom-config.h])
