@@ -2028,6 +2028,19 @@ static inline const char *kcompat_csdev_name(struct class_device *cd)
 
 #include <linux/fs.h>
 
+/*
+ * HAVE_COMPAT_IOCTL and HAVE_UNLOCKED_IOCTL were first defined in
+ * kernel version 2.6.11 but removed in kernel version 5.9.
+ *
+ * Ensure we keep them defined even for kernel version 5.9 onwards.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,11)
+#undef HAVE_COMPAT_IOCTL
+#define HAVE_COMPAT_IOCTL 1
+#undef HAVE_UNLOCKED_IOCTL
+#define HAVE_UNLOCKED_IOCTL 1
+#endif
+
 #ifndef CONFIG_COMPAT
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
 #ifdef __x86_64__
@@ -3226,6 +3239,14 @@ typedef int kcompat_hrtimer_return_t;
 
 #endif
 
+/*
+ * mmiowb() was removed altogether in kernel 5.2, so define an empty version
+ * if not already defined.
+ */
+#ifndef mmiowb
+#define mmiowb()	do; while (0)
+#endif
+
 #include <linux/string.h>
 
 /* Define kstrdup() for kernels prior to 2.6.13. */
@@ -3538,111 +3559,6 @@ static inline void *sg_virt(struct scatterlist *sg)
 
 #endif	/* ifndef for_each_sg */
 
-/* <linux/rbtree.h> stuff. */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,10)
-#define KCOMPAT_HAVE_LINUX_RBTREE_H
-#endif
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,36)
-/* Want to use 'struct rb_node' and 'struct rb_root' instead of 'rb_node_t'
- * and 'rb_root_t'.  'rb_node_t' is a typedef for 'struct rb_node_s' and
- * 'rb_root_t' is a typedef for 'struct rb_root_s', so we can just #define
- * 'rb_node' as 'rb_node_s' and 'rb_root' as 'rb_root_s'.  Note that 'struct
- * rb_root_s' contains a member called 'rb_node' that will get renamed by this
- * macro, but the code should still work.   */
-#define rb_node rb_node_s
-#define rb_root rb_root_s
-#endif
-
-#ifndef KCOMPAT_HAVE_LINUX_RBTREE_H
-/*
- * TODO: emulate the red-black tree stuff for kernel versions prior to 2.4.10.
- * That's a job for when we've got too much spare time on our hands!
- */
-#else
-/* Since we have <linux/rbtree.h> we can at least implement some of the
- * simpler backwards compatibility stuff. */
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,36)
-/*
- * Mirror the existing 'struct rb_node_s' and 'struct rb_root_s' as
- * 'struct rb_node' and 'struct 'rb_root'.  Then #define rb_node_s as rb_node
- * and rb_root_s as rb_root.  This may cause some warnings about incompatible
- * pointer types, but the code should still work.  It's the best we can do
- * unless we add the rb_node_t and rb_root_t typedefs and require our driver
- * code to use them instead of the struct rb_node and struct rb_root.
- */
-struct rb_node {
-	struct rb_node *rb_parent;
-	int rb_color;
-	struct rb_node *rb_right;
-	struct rb_node *rb_left;
-};
-
-struct rb_root {
-	struct rb_node *rb_node;
-};
-
-#define rb_node_s rb_node
-#define rb_root_s rb_root
-
-#endif	/* if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,36) */
-
-#include <linux/rbtree.h>
-
-/* .rb_parent and .rb_color were combined into .rb_parent_color in 2.6.18 */
-#ifndef rb_parent
-#define rb_parent(r)	((r)->rb_parent)
-#define rb_color(r)	((r)->rb_color)
-#define rb_is_red(r)	(!rb_color(r))
-#define rb_is_black(r)	rb_color(r)
-#define rb_set_red(r)	do { (r)->rb_color = RB_RED; } while (0)
-#define rb_set_black(r)	do { (r)->rb_color = RB_BLACK; } while (0)
-
-static inline void rb_set_parent(struct rb_node *rb, struct rb_node *p)
-{
-	rb->rb_parent = p;
-}
-
-static inline void rb_set_color(struct rb_node *rb, int color)
-{
-	rb->rb_color = color;
-}
-#endif	/* ifndef rb_parent */
-
-#ifndef RB_EMPTY_ROOT
-#define RB_EMPTY_ROOT(root)	((root)->rb_node == NULL)
-#endif
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
-/* undefine buggy RB_EMPTY_NODE */
-#undef RB_EMPTY_NODE
-#endif
-
-#ifndef RB_EMPTY_NODE
-#define RB_EMPTY_NODE(node)	(rb_parent(node) == node)
-#endif
-
-#ifndef RB_CLEAR_NODE
-#define RB_CLEAR_NODE(node)	(rb_set_parent(node, node))
-#endif
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0)
-static inline void rb_init_node(struct rb_node *rb)
-{
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18)
-	rb_set_color(rb, 0);
-#else
-	rb->rb_parent_color = 0;
-#endif
-	rb->rb_right = NULL;
-	rb->rb_left = NULL;
-	RB_CLEAR_NODE(rb);
-}
-#endif
-
-#endif	/* ifndef KCOMPAT_HAVE_LINUX_RBTREE_H */
-
 /*
  * <linux/hash.h> stuff.
  */
@@ -3949,7 +3865,11 @@ static inline int set_page_dirty_lock(struct page *page)
 #define KCOMPAT_HAVE_LINUX_UACCESS_H
 #endif
 
+#ifdef KCOMPAT_HAVE_LINUX_UACCESS_H
+#include <linux/uaccess.h>
+#else
 #include <asm/uaccess.h>
+#endif
 /*
  * Kernel 5.0 removed VERIFY_READ and VERIFY_WRITE and removed the first
  * parameter of access_ok() which was set to VERIFY_READ or VERIFY_WRITE.
