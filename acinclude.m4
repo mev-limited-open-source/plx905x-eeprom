@@ -78,6 +78,9 @@
 ## 2019-01-03 Ian Abbott: Updated 'AC_PATH_KERNEL_SOURCE' for kernel version
 ## 4.20 as the test for separate Linux source and build directory broke.
 ##
+## 2019-08-16 Ian Abbott: Updated 'AC_PATH_KERNEL_SOURCE' for kernel version
+## 5.2 as the test for separate Linux source and build directory broke again.
+##
 
 
 dnl check for kernel build directory (may or may not be kernel source directory)
@@ -212,6 +215,12 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
 		if test -z "$dir"; then
 			# 4.20
 			dir=`sed -n -e '/^__sub-make:$/,/^$/s/.* -C *\([[^[:space:]]]*\).*/\1/p' "${kerneldir}/Makefile"`
+		fi
+		if test -z "$dir"; then
+			# 5.2
+			if test "`grep -cv '^[[[:space:]]]*\(#.*\|\)$' "${kerneldir}/Makefile"`" = "1"; then
+				dir=`sed -n -e 's/^include[[[:space:]]][[[:space:]]]*\(.*\)\/Makefile$/\1/p' "${kerneldir}/Makefile"`
+			fi
 		fi
 		if test -z "$dir"; then
 			AC_MSG_RESULT([no])
