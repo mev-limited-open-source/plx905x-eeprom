@@ -76,7 +76,7 @@ MOSTLYCLEANFILES = $(module_DATA) $(module_DATA:.o=.@kernelext@) \
 CLEANFILES = $(module_DATA:.o=.mod.c) $(generated_sources)
 
 clean-local:
-	-rm -f .*.cmd .*.flags
+	-rm -f .*.cmd .*.flags *.mod
 	-rm -rf .tmp_versions
 	-if test "$(srcdir)" != "."; then \
 		for f in $(automake_dummy_SOURCES); do \
