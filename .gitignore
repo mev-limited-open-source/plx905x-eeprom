@@ -3,6 +3,7 @@
 .tmp_versions
 *.ko
 *.cmd
+*.mod
 *.mod.c
 *.o
 *~
