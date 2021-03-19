@@ -766,9 +766,14 @@ plx905x_module_init(void)
 
 		barsize = pci_resource_len(pcidev, 0);
 		bar1size = pci_resource_len(pcidev, 1);
-		if (barsize == 256 &&
+		if (barsize == 512 &&
 		    (pci_resource_flags(pcidev, 0) & IORESOURCE_MEM)) {
-			/* Assume it is PLX PCI9054/9056/9080/9656 */
+			/* Assume it is PLX PCI9056/9656 */
+			baraddr = pci_resource_start(pcidev, 0);
+			barflags = IORESOURCE_MEM;
+		} else if (barsize == 256 &&
+		    (pci_resource_flags(pcidev, 0) & IORESOURCE_MEM)) {
+			/* Assume it is PLX PCI9054/9080 */
 			baraddr = pci_resource_start(pcidev, 0);
 			barflags = IORESOURCE_MEM;
 		} else if ((barsize == 0 ||
