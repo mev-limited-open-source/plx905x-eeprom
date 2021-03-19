@@ -165,7 +165,7 @@
 #define EE_DOE	0x80000000	/* for PCI9056 */
 
 #define PLX9050_EEMASK	(EE_SK | EE_CS | EE_DI | EE_DO)
-#define PLX9656_EEMASK	(EE_SK | EE_CS | EE_DI | EE_DO | EE_DOE)
+#define PLX9056_EEMASK	(EE_SK | EE_CS | EE_DI | EE_DO | EE_DOE)
 
 struct plx905x_dev {
 	struct pci_dev *pcidev;
@@ -890,6 +890,7 @@ plx905x_module_init(void)
 			}
 			break;
 		case PLX9056_PCIHIDR_VALUE:
+			plx905x_device.cntrl_eemask = PLX9056_EEMASK;
 			model = 0x9056;
 			hrev_okay = 1;
 			break;
@@ -909,7 +910,7 @@ plx905x_module_init(void)
 			hrev_okay = 1;
 			break;
 		case PLX9656_PCIHIDR_VALUE:
-			plx905x_device.cntrl_eemask = PLX9656_EEMASK;
+			plx905x_device.cntrl_eemask = PLX9056_EEMASK;
 			model = 0x9656;
 			if (hrev >= 0xAA) {
 				hrev_okay = 1;
