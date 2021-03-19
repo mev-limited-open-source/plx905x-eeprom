@@ -1822,8 +1822,14 @@ extern struct class_device *(*kcompat_class_device_create)(struct class *,
 #endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15) */
 #endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0) */
 
-#ifdef CLASS_ATTR
+#if defined(CLASS_ATTR) || defined(CLASS_ATTR_RO)
 /* Can use attributes. */
+/*
+ * Note: The CLASS_ATTR() macro was removed in kernel 4.13.  Driver code
+ * should use the CLASS_ATTR_RO() and CLASS_ATTR_RW() macros instead which
+ * were introduced in kernel 3.11 and defined below for compatibility with
+ * older kernels.
+ */
 #define KCOMPAT_HAVE_CLASS_ATTR
 #endif
 
@@ -1839,7 +1845,7 @@ extern struct class_device *(*kcompat_class_device_create)(struct class *,
 #endif
 #endif
 
-#ifdef CLASS_ATTR
+#ifdef KCOMPAT_HAVE_CLASS_ATTR
 #ifndef CLASS_ATTR_RO
 #ifdef __ATTR_RO
 #define CLASS_ATTR_RO(_name) \
