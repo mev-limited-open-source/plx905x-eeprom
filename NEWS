@@ -1,3 +1,13 @@
+Version 2.1 2021-03-19
+===========
+
+Adds fixes for PLX PCI9056.  Corrects the code for detecting PLX PCI9056
+and PCI9656.  It did not work because it treated the BAR 0 size of 512
+as invalid for the supported PLX chips.  Corrects the code for accessing
+the serial EEPROM contents for PLX PCI9056 to be the same as that for
+the PCI9656.  Reading and writing EEPROM contents works for PCI9056 now.
+
+
 Version 2.0.1 2020-10-18
 =============
 
