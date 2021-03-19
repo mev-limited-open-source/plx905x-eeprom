@@ -11,11 +11,11 @@
  *     Europa Business Park
  *     Bird Hall Lane
  *     STOCKPORT
- *     SK3 8LF
+ *     SK3 0XA
  *     UNITED KINGDOM
  *
  *     Tel: +44 (0)161 477 1898
- *     WWW: http://www.mev.co.uk/
+ *     WWW: https://www.mev.co.uk/
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
