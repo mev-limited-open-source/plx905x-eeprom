@@ -98,6 +98,10 @@
 #endif
 #endif
 
+#ifndef fallthrough
+#define fallthrough	do {} while (0)  /* fallthrough */
+#endif
+
 #ifndef __user
 #define __user
 #endif
