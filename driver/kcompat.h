@@ -3353,14 +3353,32 @@ static inline void *kcompat_kmemdup(const void *src, size_t len, gfp_t gfp)
 #ifdef KCOMPAT_HAVE_LINUX_FIRMWARE_H
 #include <linux/firmware.h>
 
+/* In kernel version 5.14, FW_ACTION_HOTPLUG and FW_ACTION_NOHOTPLUG changed
+ * names to FW_ACTION_UEVENT and FW_ACTION_NOUEVENT, respectively.
+ *
+ * If FW_ACTION_HOTPLUG is defined, define FW_ACTION_UEVENT and
+ * FW_ACTION_NOUEVENT to expand to the old names.
+ */
+#ifdef FW_ACTION_HOTPLUG
+#define FW_ACTION_UEVENT FW_ACTION_HOTPLUG
+#define FW_ACTION_NOUEVENT FW_ACTION_NOHOTPLUG
+#endif
+
 /* Define KCOMPAT_REQUEST_FIRMWARE_NOWAIT_HAS_UEVENT if
  * request_firmware_nowait() has an extra parameter (parameter 2) called
  * 'hotplug' or 'uevent' of type 'int' between the 'module' and firmware 'name'
  * parameters.  This is true for kernel 2.6.14 onwards, and is associated
  * with the #define values FW_ACTION_NOHOTPLUG and FW_ACTION_HOTPLUG added
  * in the same kernel version.  Note that for kernel version 2.6.39 onwards,
- * the 'uevent' parameter changed type from 'int' to 'bool'.  */
-#ifdef FW_ACTION_HOTPLUG
+ * the 'uevent' parameter changed type from 'int' to 'bool'.
+ *
+ * In kernel version 5.14, FW_ACTION_HOTPLUG and FW_ACTION_NOHOTPLUG changed
+ * names to FW_ACTION_UEVENT and FW_ACTION_NOUEVENT, respectively.
+ *
+ * We defined FW_ACTION_UEVENT (and FW_ACTION_NOUEVENT) if FW_ACTION_HOTPLUG
+ * is defined, so test whether that macro is defined.
+ */
+#ifdef FW_ACTION_UEVENT
 #define KCOMPAT_REQUEST_FIRMWARE_NOWAIT_HAS_UEVENT
 #endif
 /* KCOMPAT_REQUEST_FIRMWARE_NOWAIT_HAS_GFP may have been defined outside this
