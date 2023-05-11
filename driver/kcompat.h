@@ -98,12 +98,26 @@
 #endif
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
+#if __GNUC__ >= 3
+/* FIXME: Not sure which __GNUC_MINOR__ supports '_Bool'. */
+typedef _Bool bool;
+#else
+/* FIXME: This might break, and doesn't have the C99 _Bool semantics. */
+typedef int bool;
+#endif	/* if __GNUC__ >= 3 */
+#endif	/* if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19) */
+
 #ifndef fallthrough
 #define fallthrough	do {} while (0)  /* fallthrough */
 #endif
 
 #ifndef __user
 #define __user
+#endif
+
+#ifndef __force
+#define __force
 #endif
 
 #ifndef __iomem
@@ -980,14 +994,14 @@ static inline void list_splice_tail_init(struct list_head *list,
 #ifndef list_for_each_entry
 #define list_for_each_entry(pos, head, member)				\
 	for (pos = list_entry((head)->next, typeof(*pos), member);	\
-	     &pos->member != (head); 	\
+	     &pos->member != (head);	\
 	     pos = list_entry(pos->member.next, typeof(*pos), member))
 #endif
 
 #ifndef list_for_each_entry_reverse
 #define list_for_each_entry_reverse(pos, head, member)			\
 	for (pos = list_entry((head)->prev, typeof(*pos), member);	\
-	     &pos->member != (head); 	\
+	     &pos->member != (head);	\
 	     pos = list_entry(pos->member.prev, typeof(*pos), member))
 #endif
 
@@ -997,7 +1011,7 @@ static inline void list_splice_tail_init(struct list_head *list,
 #endif
 
 #ifndef list_for_each_entry_continue
-#define list_for_each_entry_continue(pos, head, member) 		\
+#define list_for_each_entry_continue(pos, head, member)			\
 	for (pos = list_entry(pos->member.next, typeof(*pos), member);	\
 	     &pos->member != (head);	\
 	     pos = list_entry(pos->member.next, typeof(*pos), member))
@@ -1011,7 +1025,7 @@ static inline void list_splice_tail_init(struct list_head *list,
 #endif
 
 #ifndef list_for_each_entry_from
-#define list_for_each_entry_from(pos, head, member) 			\
+#define list_for_each_entry_from(pos, head, member)			\
 	for (; &pos->member != (head);	\
 	     pos = list_entry(pos->member.next, typeof(*pos), member))
 #endif
@@ -1020,20 +1034,20 @@ static inline void list_splice_tail_init(struct list_head *list,
 #define list_for_each_entry_safe(pos, n, head, member)			\
 	for (pos = list_entry((head)->next, typeof(*pos), member),	\
 		n = list_entry(pos->member.next, typeof(*pos), member);	\
-	     &pos->member != (head); 					\
+	     &pos->member != (head);					\
 	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
 #endif
 
 #ifndef list_for_each_entry_safe_continue
-#define list_for_each_entry_safe_continue(pos, n, head, member) 	\
-	for (pos = list_entry(pos->member.next, typeof(*pos), member), 	\
+#define list_for_each_entry_safe_continue(pos, n, head, member)		\
+	for (pos = list_entry(pos->member.next, typeof(*pos), member),	\
 		n = list_entry(pos->member.next, typeof(*pos), member);	\
 	     &pos->member != (head);					\
 	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
 #endif
 
 #ifndef list_for_each_entry_safe_from
-#define list_for_each_entry_safe_from(pos, n, head, member) 		\
+#define list_for_each_entry_safe_from(pos, n, head, member)		\
 	for (n = list_entry(pos->member.next, typeof(*pos), member);	\
 	     &pos->member != (head);					\
 	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
@@ -1043,7 +1057,7 @@ static inline void list_splice_tail_init(struct list_head *list,
 #define list_for_each_entry_safe_reverse(pos, n, head, member)		\
 	for (pos = list_entry((head)->prev, typeof(*pos), member),	\
 		n = list_entry(pos->member.prev, typeof(*pos), member);	\
-	     &pos->member != (head); 					\
+	     &pos->member != (head);					\
 	     pos = n, n = list_entry(n->member.prev, typeof(*n), member))
 #endif
 
@@ -1194,9 +1208,9 @@ static inline void hlist_move_list(struct hlist_head *old,
 #endif
 
 #ifndef hlist_for_each_entry_safe
-#define hlist_for_each_entry_safe(tpos, pos, n, head, member) 		 \
+#define hlist_for_each_entry_safe(tpos, pos, n, head, member)		 \
 	for (pos = (head)->first;					 \
-	     pos && ({ n = pos->next; 1; }) && 				 \
+	     pos && ({ n = pos->next; 1; }) &&				 \
 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
 	     pos = n)
 #endif
@@ -1951,11 +1965,11 @@ extern struct device *(*kcompat_device_create_2_6_19)(struct class *,
 #define device_create(cls, parent, devt, drvdata, fmt...)		\
 ({									\
 	struct device *__ret =						\
- 		kcompat_device_create_2_6_19(cls, parent, devt, fmt);	\
+		kcompat_device_create_2_6_19(cls, parent, devt, fmt);	\
 	if (__ret) {							\
- 		dev_set_drvdata(__ret, drvdata);			\
+		dev_set_drvdata(__ret, drvdata);			\
 	}								\
- 	__ret;								\
+	__ret;								\
 })
 #endif	/* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26) */
 #endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27) */
@@ -2021,7 +2035,7 @@ static inline const char *kcompat_csdev_name(struct class_device *cd)
 ({								\
 	if (0)							\
 		csdev_printk(KERN_DEBUG, cd, format, ## arg);	\
- 	0;							\
+	0;							\
 })
 #endif
 
@@ -2032,7 +2046,7 @@ static inline const char *kcompat_csdev_name(struct class_device *cd)
 ({								\
 	if (0)							\
 		csdev_printk(KERN_DEBUG, cd, format, ## arg);	\
- 	0;							\
+	0;							\
 })
 #endif
 
@@ -2226,6 +2240,26 @@ static inline loff_t fixed_size_llseek(struct file *file, loff_t offset,
 		return -EINVAL;
 	}
 }
+#endif
+
+/*
+ * The imajor() and iminor() inline functions were added in kernel version
+ * 2.6.0.  Emulate them for earlier kernel versions.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+static inline unsigned int kcompat_iminor(struct inode *inode)
+{
+	return MINOR(inode->i_rdev);
+}
+#undef iminor
+#define iminor(inode) kcompat_iminor(inode)
+
+static inline unsigned int kcompat_imajor(struct inode *inode)
+{
+	return MAJOR(inode->i_rdev);
+}
+#undef imajor
+#define imajor(inode) kcompat_imajor(inode)
 #endif
 
 #include <linux/interrupt.h>
@@ -3458,9 +3492,95 @@ static inline void release_firmware(const struct firmware *fw)
 
 #include <linux/mm.h>
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0)
+typedef unsigned long __nocast vm_flags_t;
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,3,0)
+static inline void vm_flags_init(struct vm_area_struct *vma, vm_flags_t flags)
+{
+	vma->vm_flags = flags;
+}
+
+static inline void vm_flags_reset(struct vm_area_struct *vma, vm_flags_t flags)
+{
+	vm_flags_init(vma, flags);
+}
+
+static inline void vm_flags_set(struct vm_area_struct *vma, vm_flags_t flags)
+{
+	vma->vm_flags |= flags;
+}
+
+static inline void vm_flags_clear(struct vm_area_struct *vma, vm_flags_t flags)
+{
+	vma->vm_flags &= ~flags;
+}
+
+static inline void __vm_flags_mod(struct vm_area_struct *vma,
+				  vm_flags_t set, vm_flags_t clear)
+{
+	vm_flags_init(vma, (vma->vm_flags | set) & ~clear);
+}
+
+static inline void vm_flags_mod(struct vm_area_struct *vma,
+				vm_flags_t set, vm_flags_t clear)
+{
+	__vm_flags_mod(vma, set, clear);
+}
+#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,3,0) */
+
+#ifndef PG_locked
+#include <linux/page-flags.h>
+#endif
+
 #ifndef offset_in_page
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
 #endif
+
+/*
+ * set_page_dirty_lock() was added in kernel 2.5.57.  Fake it before that.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,57)
+static inline int set_page_dirty_lock(struct page *page)
+{
+	int ret;
+
+	lock_page(page);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,12)
+	set_page_dirty(page);
+	ret = 1;	/* ought to be 0 if page was already marked dirty */
+#else
+	ret = set_page_dirty(page);
+#endif
+	unlock_page(page);
+	return ret;
+}
+#endif
+
+#ifndef page_private
+#define page_private(page) ((page)->private)
+#endif
+
+/*
+ * compound_head() added in Linux kernel version 2.6.22.  Before that,
+ * page->private held the head of compound pages.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22)
+static inline struct page *compound_head(struct page *page)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,60)
+	if (unlikely(PageCompound(page))) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,6)
+		page = (struct page *)page_private(page);
+#else
+		page = (struct page *)page->lru.next;
+#endif	/* if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,6) */
+	}
+#endif	/* if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,60) */
+	return page;
+}
+#endif	/* if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22) */
 
 /* struct scatterlist stuff. */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,10)
@@ -3810,27 +3930,80 @@ static inline int get_user_pages_fast(unsigned long start, int nr_pages,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39)
 #define KCOMPAT_HAVE___GET_USER_PAGES
 #endif
-#endif	/* ifdef KCOMPAT_HAVE_GET_USER_PAGES */
 
 /*
- * set_page_dirty_lock() was added in kernel 2.5.57.  Fake it before that.
+ * TODO: Deal with changes to parameters of get_user_pages()
+ * in kernel version 4.9.
  */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,57)
-static inline int set_page_dirty_lock(struct page *page)
-{
-	int ret;
 
-	lock_page(page);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,12)
-	set_page_dirty(page);
-	ret = 1;	/* ought to be 0 if page was already marked dirty */
-#else
-	ret = set_page_dirty(page);
+/*
+ * In kernel version 5.2, the third parameter of get_user_pages_fast() changed
+ * from `int write` to `unsigned int gup_flags`.  Common values passed are
+ * `0` for read-only mappings or `FOLL_WRITE` for read-write mappings.
+ *
+ * `FOLL_WRITE` was first defined by <linux/mm.h> in kernel version 2.6.15.
+ * Define it if missing.
+ */
+#ifndef FOLL_WRITE
+#define FOLL_WRITE	0x01
 #endif
-	unlock_page(page);
-	return ret;
+
+/*
+ * Kernel version 5.6 introduced pin_user_pages(), pin_user_pages_fast(),
+ * etc., unpin_user_page(), unpin_user_pages(), and
+ * unpin_user_pages_dirty_lock().  The 'FOLL_PIN' macro was defined at the
+ * same time, so check for that when checking for backports.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,6,0) && !defined(FOLL_PIN)
+/*
+ * For now, only define pin_user_pages_fast().
+ *
+ * TODO: define pin_user_pages() and perhaps others.
+ */
+
+static inline long pin_user_pages_fast(unsigned long start, int nr_pages,
+				       unsigned int gup_flags,
+				       struct page **pages)
+{
+	return get_user_pages_fast(start, nr_pages, gup_flags, pages);
 }
-#endif
+
+static inline void unpin_user_page(struct page *page)
+{
+	put_page(page);
+}
+
+static inline void unpin_user_pages(struct page **pages, unsigned long npages)
+{
+	unsigned long index;
+
+	for (index = 0; index < npages; index++)
+		unpin_user_page(pages[index]);
+}
+
+static inline void unpin_user_pages_dirty_lock(struct page **pages,
+					       unsigned long npages,
+					       bool make_dirty)
+{
+	unsigned long index;
+
+	if (!make_dirty) {
+		unpin_user_pages(pages, npages);
+		return;
+	}
+
+	for (index = 0; index < npages; index++) {
+		struct page *page = compound_head(pages[index]);
+
+		if (!PageDirty(page))
+			set_page_dirty_lock(page);
+		unpin_user_page(page);
+	}
+}
+
+#endif	/* if LINUX_VERSION_CODE<KERNEL_VERSION(5,6,0) && !defined(FOLL_PIN) */
+
+#endif	/* ifdef KCOMPAT_HAVE_GET_USER_PAGES */
 
 /*
  * In <linux/highmem.h>, single argument forms of kmap_atomic() and
@@ -3942,20 +4115,6 @@ static inline int _kcompat_access_ok(unsigned long addr, size_t size)
  * file operations.
  */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0)
-#define KCOMPAT_EPOLLIN		POLLIN
-#define KCOMPAT_EPOLLPRI	POLLPRI
-#define KCOMPAT_EPOLLOUT	POLLOUT
-#define KCOMPAT_EPOLLERR	POLLERR
-#define KCOMPAT_EPOLLHUP	POLLHUP
-#define KCOMPAT_EPOLLNVAL	POLLNVAL
-#define KCOMPAT_EPOLLRDNORM	POLLRDNORM
-#define KCOMPAT_EPOLLRDBAND	POLLRDBAND
-#define KCOMPAT_EPOLLWRNORM	POLLWRNORM
-#define KCOMPAT_EPOLLWRBAND	POLLWRBAND
-#define KCOMPAT_EPOLLMSG	POLLMSG
-#define KCOMPAT_EPOLLRDHUP	POLLRDHUP
-typedef __poll_t kcompat_poll_t;
-#else
 #define KCOMPAT_EPOLLIN		EPOLLIN
 #define KCOMPAT_EPOLLPRI	EPOLLPRI
 #define KCOMPAT_EPOLLOUT	EPOLLOUT
@@ -3968,7 +4127,66 @@ typedef __poll_t kcompat_poll_t;
 #define KCOMPAT_EPOLLWRBAND	EPOLLWRBAND
 #define KCOMPAT_EPOLLMSG	EPOLLMSG
 #define KCOMPAT_EPOLLRDHUP	EPOLLRDHUP
+typedef __poll_t kcompat_poll_t;
+#else
+#define KCOMPAT_EPOLLIN		POLLIN
+#define KCOMPAT_EPOLLPRI	POLLPRI
+#define KCOMPAT_EPOLLOUT	POLLOUT
+#define KCOMPAT_EPOLLERR	POLLERR
+#define KCOMPAT_EPOLLHUP	POLLHUP
+#define KCOMPAT_EPOLLNVAL	POLLNVAL
+#define KCOMPAT_EPOLLRDNORM	POLLRDNORM
+#define KCOMPAT_EPOLLRDBAND	POLLRDBAND
+#define KCOMPAT_EPOLLWRNORM	POLLWRNORM
+#define KCOMPAT_EPOLLWRBAND	POLLWRBAND
+#define KCOMPAT_EPOLLMSG	POLLMSG
+#define KCOMPAT_EPOLLRDHUP	POLLRDHUP
 typedef unsigned int kcompat_poll_t;
+#endif
+
+/*
+ * dma_pool functions available from kernel version 2.6.3 onwards.
+ * Prior to that, the pci_pool functions need to be used (for PCI devices).
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,3)
+#define KCOMPAT_HAVE_LINUX_DMAPOOL_H
+#include <linux/dmapool.h>
+#endif
+
+/*
+ * DMA API available from kernel verison 2.5.53 onwards.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,53)
+#define KCOMPAT_HAVE_LINUX_DMA_MAPPING_H
+#endif
+
+#ifdef KCOMPAT_HAVE_LINUX_DMA_MAPPING_H
+#include <linux/dma-mapping.h>
+
+/*
+ * Redefine dma_alloc_coherent() to zero the allocated memory for earlier
+ * kernel versions like it does for kernel version 5.0.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,2,0)
+
+static inline void *kcompat_dma_alloc_coherent(struct device *dev, size_t size,
+					       dma_addr_t *dma_handle,
+					       gfp_t flags)
+{
+	void *ret = dma_alloc_coherent(dev, size, dma_handle, flags);
+	if (ret)
+		memset(ret, 0, size);
+	return ret;
+}
+#undef dma_alloc_coherent
+#define dma_alloc_coherent kcompat_dma_alloc_coherent
+
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
+
+#undef dma_alloc_coherent
+#define dma_alloc_coherent dma_zalloc_coherent
+
+#endif
 #endif
 
 #endif	/* KCOMPAT_H__INCLUDED */
