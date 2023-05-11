@@ -1062,7 +1062,7 @@ plx905x_module_init(void)
 	pr_info("major %d\n", major);
 
 	/* Register sysfs class (for 2.6 or later kernel). */
-	plx905x_class = class_create(THIS_MODULE, CLASS_NAME);
+	plx905x_class = class_create(CLASS_NAME);
 	if (IS_ERR(plx905x_class)) {
 		rc = PTR_ERR(plx905x_class);
 		pr_err("failed to register SysFS class\n");

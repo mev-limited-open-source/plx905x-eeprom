@@ -1290,8 +1290,7 @@ extern int kcompat_class_register(struct class *cls);
 #define class_unregister(cls) kcompat_class_unregister(cls)
 extern void kcompat_class_unregister(struct class *cls);
 
-#undef class_create
-#define class_create(owner, name) kcompat_class_create(owner, name)
+/* Note: class_create() macro is (re)defined below. */
 extern struct class *kcompat_class_create(struct module *owner,
 		const char *name);
 
@@ -1766,8 +1765,7 @@ void kcompat_class_simple_device_remove(dev_t dev)
 #define KCOMPAT_GET_CLASS_DEVICE_DEVT(csdev)	\
 	(kcompat_to_simple_dev((csdev))->dev)
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)
-/* Make earlier device class interface look like 2.6.15. */
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,13)
 /* For kernel versions prior to 2.6.13, map onto the class_simple interface. */
 static inline struct class_simple *kcompat_class_to_class_simple(
@@ -1780,7 +1778,8 @@ static inline struct class_simple *kcompat_class_to_class_simple(
 	}
 }
 
-static inline struct class *class_create(struct module *owner, char *name)
+static inline struct class *
+kcompat_class_create(struct module *owner, char *name)
 {
 	struct kcompat_class_simple *csimple;
 
@@ -1793,8 +1792,37 @@ static inline struct class *class_create(struct module *owner, char *name)
 	}
 }
 
+/* Note: class_create() macro is (re)defined below. */
 #define class_destroy(cs) \
 	class_simple_destroy(kcompat_class_to_class_simple(cs))
+
+#else	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,13) */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27)
+static inline struct class *
+kcompat_class_create(struct module *owner, const char *name)
+{
+	/*
+	 * Harmlessly cast away const qualifier to match function prototype for
+	 * kernel versions prior to 2.6.19.
+	 */
+	return class_create(owner, (char *)name);
+}
+#else	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27) */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0)
+/* Define kcompat_class_create() macro like the existing class_create(). */
+/* Note: This uses a GNU GCC extension! */
+#define kcompat_class_create(owner, name)	\
+({						\
+	static struct lock_class_key __key;	\
+	__class_create(owner, name, &__key);	\
+})
+#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0) */
+#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27) */
+#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,13) */
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)
+/* Make earlier device class interface look like 2.6.15. */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,13)
 /* Note: class_device_create macro uses GNU GCC extension! */
 /* Note: The 2nd parameter of class_device_create is ignored! */
 #define class_device_create(cs, parent, dev, device, fmt...) \
@@ -1839,6 +1867,19 @@ extern struct class_device *(*kcompat_class_device_create)(struct class *,
 #endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,13) */
 #endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15) */
 #endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0) */
+
+/*
+ * Kernel version 6.4 removes the module owner parameter from class_create().
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0)
+/*
+ * Redefine class_create() to use single parameter and use THIS_MODULE as the
+ * owner.
+ */
+#undef class_create
+#define class_create(name) kcompat_class_create(THIS_MODULE, name)
+
+#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0) */
 
 #if defined(CLASS_ATTR) || defined(CLASS_ATTR_RO)
 /* Can use attributes. */
