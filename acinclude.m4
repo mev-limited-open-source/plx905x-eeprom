@@ -84,6 +84,11 @@
 ## 2021-12-09 Ian Abbott: Replaced obsolete 'AC_HELP_STRING' with
 ## 'AS_HELP_STRING'.
 ##
+## 2023-08-29 Ian Abbott: In 'AC_PATH_KERNEL_SOURCE', if the check for
+## separate source and build directories detects a source path name that
+## looks like a Makefile variable, discard it and assume that the source
+## and build directories are the same.
+##
 
 
 dnl check for kernel build directory (may or may not be kernel source directory)
@@ -224,6 +229,10 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
 			if test "`grep -cv '^[[[:space:]]]*\(#.*\|\)$' "${kerneldir}/Makefile"`" = "1"; then
 				dir=`sed -n -e 's/^include[[[:space:]]][[[:space:]]]*\(.*\)\/Makefile$/\1/p' "${kerneldir}/Makefile"`
 			fi
+		fi
+		if expr "$dir" : '\$(' > /dev/null; then
+			# "$dir" looks like a Makefile variable.  Discard it.
+			dir=""
 		fi
 		if test -z "$dir"; then
 			AC_MSG_RESULT([no])
