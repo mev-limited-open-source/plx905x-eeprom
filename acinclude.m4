@@ -81,6 +81,9 @@
 ## 2019-08-16 Ian Abbott: Updated 'AC_PATH_KERNEL_SOURCE' for kernel version
 ## 5.2 as the test for separate Linux source and build directory broke again.
 ##
+## 2021-12-09 Ian Abbott: Replaced obsolete 'AC_HELP_STRING' with
+## 'AS_HELP_STRING'.
+##
 
 
 dnl check for kernel build directory (may or may not be kernel source directory)
@@ -195,7 +198,7 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
 	AC_REQUIRE([AC_PATH_KERNEL_BUILD])
 	kernelsrcdir=missing
 	AC_ARG_WITH([linuxsrcdir],
-		[AC_HELP_STRING([--with-linuxsrcdir=DIR],
+		[AS_HELP_STRING([--with-linuxsrcdir=DIR],
 			[specify path to Linux source directory])],
 		[kernelsrcdir="${withval}"],
 		[kernelsrcdir=default])
