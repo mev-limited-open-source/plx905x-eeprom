@@ -1,3 +1,9 @@
+Version 2.1.2 2023-09-11
+=============
+
+Improves detection of separate kernel source and build directories.
+
+
 Version 2.1.1 2023-05-11
 =============
 
