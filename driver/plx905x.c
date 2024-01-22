@@ -659,7 +659,7 @@ static struct file_operations plx905x_fops = {
 	.release = plx905x_release,
 };
 
-int __init
+static int __init
 plx905x_module_init(void)
 {
 	struct pci_dev *pcidev = NULL;
@@ -1190,7 +1190,7 @@ out_fail_find_device:
 	return rc;
 }
 
-void __exit
+static void __exit
 plx905x_module_exit(void)
 {
 	pr_info("exit\n");
