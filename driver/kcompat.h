@@ -378,7 +378,7 @@ int kcompat_no_printk(const char *fmt, ...)
 /* TODO: support rate-limited printk stuff. */
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,20)
-#define dump_stack() do; while(0)
+#define dump_stack() do {} while(0)
 #endif
 
 #ifndef BUG_ON
@@ -3319,7 +3319,7 @@ typedef int kcompat_hrtimer_return_t;
 #else
 
 /* Other architectures. */
-#define mmiowb()	do; while (0)
+#define mmiowb()	do {} while (0)
 #endif
 
 #endif
@@ -3329,7 +3329,7 @@ typedef int kcompat_hrtimer_return_t;
  * if not already defined.
  */
 #ifndef mmiowb
-#define mmiowb()	do; while (0)
+#define mmiowb()	do {} while (0)
 #endif
 
 #include <linux/string.h>
