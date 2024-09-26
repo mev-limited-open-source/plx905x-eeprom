@@ -68,7 +68,7 @@ uninstall-moduleDATA:
 if SANDBOXED
 else
 install-data-local: install-moduleDATA
-	-@depmod@ -a
+	-test -n "$(DESTDIR)" || @depmod@ -a $(kernelrelease)
 endif
 
 MOSTLYCLEANFILES = $(module_DATA) $(module_DATA:.o=.@kernelext@) \
