@@ -89,6 +89,10 @@
 ## looks like a Makefile variable, discard it and assume that the source
 ## and build directories are the same.
 ##
+## 2024-12-03 Ian Abbott: Updated 'AC_PATH_KERNEL_SOURCE' for kernel version
+## 6.13 as the test used for kernel version 5.2 was too restrictive and broke
+## for 6.13.
+##
 
 
 dnl check for kernel build directory (may or may not be kernel source directory)
@@ -226,9 +230,7 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
 		fi
 		if test -z "$dir"; then
 			# 5.2
-			if test "`grep -cv '^[[[:space:]]]*\(#.*\|\)$' "${kerneldir}/Makefile"`" = "1"; then
-				dir=`sed -n -e 's/^include[[[:space:]]][[[:space:]]]*\(.*\)\/Makefile$/\1/p' "${kerneldir}/Makefile"`
-			fi
+			dir=`sed -n -e 's/^include[[[:space:]]][[[:space:]]]*\(.*\)\/Makefile$/\1/p' "${kerneldir}/Makefile"`
 		fi
 		if expr "$dir" : '\$(' > /dev/null; then
 			# "$dir" looks like a Makefile variable.  Discard it.
