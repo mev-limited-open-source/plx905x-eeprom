@@ -1,5 +1,6 @@
 
 EXTRA_CFLAGS += $(PLX905X_EXTRA_CFLAGS)
+ccflags-y += $(PLX905X_EXTRA_CFLAGS)
 
 obj-m := $(module_DATA)
 ifeq ($(VERSION).$(PATCHLEVEL), 2.4)
