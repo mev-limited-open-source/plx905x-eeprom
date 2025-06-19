@@ -1,3 +1,10 @@
+Version 2.1.5 2025-06-19
+=============
+
+Kernel compatibility fixes for later RHEL 5.14 kernels due to Red Hat
+back-porting API changes from later kernels.
+
+
 Version 2.1.4 2025-04-07
 =============
 
