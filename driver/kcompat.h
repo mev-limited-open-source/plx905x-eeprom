@@ -3537,7 +3537,7 @@ static inline void release_firmware(const struct firmware *fw)
 typedef unsigned long __nocast vm_flags_t;
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,3,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,3,0) && !defined(VM_LOCKED_MASK)
 static inline void vm_flags_init(struct vm_area_struct *vma, vm_flags_t flags)
 {
 	vma->vm_flags = flags;
@@ -3569,7 +3569,7 @@ static inline void vm_flags_mod(struct vm_area_struct *vma,
 {
 	__vm_flags_mod(vma, set, clear);
 }
-#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,3,0) */
+#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,3,0) && !defined(VM_LOCKED_MASK) */
 
 #ifndef PG_locked
 #include <linux/page-flags.h>
