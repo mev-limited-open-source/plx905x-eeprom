@@ -1570,6 +1570,12 @@ void kcompat_class_device_destroy(struct class *cls, dev_t devt)
 
 #endif	/* KCOMPAT_DEFINE_CLASS_DEVICE_CREATE */
 
+/*
+ * Define kcompat_class_create(owner, name) as a macro that calls the function
+ * of the same name.  This will be tested for later.
+ */
+#define kcompat_class_create(owner, name) kcompat_class_create(owner, name)
+
 #else	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0) */
 #include <linux/device.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
@@ -1792,6 +1798,12 @@ kcompat_class_create(struct module *owner, char *name)
 	}
 }
 
+/*
+ * Define kcompat_class_create(owner, name) as a macro that calls the function
+ * of the same name.  This will be tested for later.
+ */
+#define kcompat_class_create(owner, name) kcompat_class_create(owner, name)
+
 /* Note: class_create() macro is (re)defined below. */
 #define class_destroy(cs) \
 	class_simple_destroy(kcompat_class_to_class_simple(cs))
@@ -1807,8 +1819,20 @@ kcompat_class_create(struct module *owner, const char *name)
 	 */
 	return class_create(owner, (char *)name);
 }
+
+/*
+ * Define kcompat_class_create(owner, name) as a macro that calls the function
+ * of the same name.  This will be tested for later.
+ */
+#define kcompat_class_create(owner, name) kcompat_class_create(owner, name)
+
 #else	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27) */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0)
+/*
+ * N.B. Red Hat back-ported the 6.4 class_create() function to later 5.14
+ * kernels.  Detect this by the fact that class_create will not be defined as
+ * a macro in that case.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0) && defined(class_create)
 /* Define kcompat_class_create() macro like the existing class_create(). */
 /* Note: This uses a GNU GCC extension! */
 #define kcompat_class_create(owner, name)	\
@@ -1816,7 +1840,7 @@ kcompat_class_create(struct module *owner, const char *name)
 	static struct lock_class_key __key;	\
 	__class_create(owner, name, &__key);	\
 })
-#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0) */
+#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0) && defined(class_create) */
 #endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27) */
 #endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,13) */
 
@@ -1870,8 +1894,11 @@ extern struct class_device *(*kcompat_class_device_create)(struct class *,
 
 /*
  * Kernel version 6.4 removes the module owner parameter from class_create().
+ * Red Hat back-ported this to its later 5.14 kernels.  The macro
+ * kcompat_class_create(owner, name) will have been defined above if we need
+ * to redefine class_create() for kernel versions before 6.4.
  */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0) && defined(kcompat_class_create)
 /*
  * Redefine class_create() to use single parameter and use THIS_MODULE as the
  * owner.
@@ -1879,7 +1906,7 @@ extern struct class_device *(*kcompat_class_device_create)(struct class *,
 #undef class_create
 #define class_create(name) kcompat_class_create(THIS_MODULE, name)
 
-#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0) */
+#endif	/* LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0) && defined(kcompat_class_create) */
 
 #if defined(CLASS_ATTR) || defined(CLASS_ATTR_RO)
 /* Can use attributes. */
