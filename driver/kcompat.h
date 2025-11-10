@@ -3623,6 +3623,8 @@ static inline void vm_flags_mod(struct vm_area_struct *vma,
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
 #endif
 
+#include <linux/pagemap.h>	/* for lock_page() */
+
 /*
  * set_page_dirty_lock() was added in kernel 2.5.57.  Fake it before that.
  */
