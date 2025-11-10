@@ -3773,7 +3773,7 @@ static inline dma_addr_t sg_phys(struct scatterlist *sg)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,13)
 	return __pa(sg->address);
 #else
-i	return page_to_phys(sg->page) + sg->offset;
+	return page_to_phys(sg->page) + sg->offset;
 #endif
 }
 
