@@ -2229,6 +2229,18 @@ static inline struct inode *file_inode(struct file *f)
 }
 #endif
 
+#ifndef SEEK_SET
+#define SEEK_SET	0
+#endif
+
+#ifndef SEEK_CUR
+#define SEEK_CUR	1
+#endif
+
+#ifndef SEEK_END
+#define SEEK_END	2
+#endif
+
 /*
  * The fixed_size_llseek() helper was added in kernel 3.11.0.
  * Emulate it for earlier kernels.
