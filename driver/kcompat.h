@@ -795,6 +795,19 @@ static inline void rb_init_node(struct rb_node *rb)
 #define LIST_POISON2	((void *)0x00200200)
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+/*
+ * Kernel 2.6.0 changed the parameter of list_empty() to be a pointer to const.
+ */
+static inline int kcompat_list_empty(const struct list_head *head)
+{
+	return head->next == head;
+}
+
+#undef list_empty
+#define list_empty(head) kcompat_list_empty(head)
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,38)
 static inline void __list_del_entry(struct list_head *entry)
 {
