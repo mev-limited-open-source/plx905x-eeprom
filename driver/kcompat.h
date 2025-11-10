@@ -698,17 +698,6 @@ static inline int kcompat_kref_put(struct kref *kref,
 #define KCOMPAT_HAVE_LINUX_RBTREE_H
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,36)
-/* Want to use 'struct rb_node' and 'struct rb_root' instead of 'rb_node_t'
- * and 'rb_root_t'.  'rb_node_t' is a typedef for 'struct rb_node_s' and
- * 'rb_root_t' is a typedef for 'struct rb_root_s', so we can just #define
- * 'rb_node' as 'rb_node_s' and 'rb_root' as 'rb_root_s'.  Note that 'struct
- * rb_root_s' contains a member called 'rb_node' that will get renamed by this
- * macro, but the code should still work.   */
-#define rb_node rb_node_s
-#define rb_root rb_root_s
-#endif
-
 #ifndef KCOMPAT_HAVE_LINUX_RBTREE_H
 /*
  * TODO: emulate the red-black tree stuff for kernel versions prior to 2.4.10.
