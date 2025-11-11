@@ -100,6 +100,12 @@
 #define DEVICE_PREFIX PLX905X_EEPROM_DEVICE_PREFIX
 
 /*
+ * Bit number to indicate device name registered with devfs for older
+ * kernels if supported.
+ */
+#define PLX905X_STATUS_DEVNAME_REGISTERED	0
+
+/*
  * Redefine pr_debug macro to use "debug" module parameter.
  */
 #undef pr_debug
