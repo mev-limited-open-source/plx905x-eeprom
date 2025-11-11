@@ -6,7 +6,7 @@ dnl configure.ac, (C) 2015-2025 MEV Ltd.
 AC_PREREQ([2.69])
 AC_INIT([PLX PCI905x Serial EEPROM Driver],[2.1.5],[abbotti@mev.co.uk],[plx905x-eeprom])
 AM_INIT_AUTOMAKE([foreign])
-AM_MAINTAINER_MODE([enable])
+AM_MAINTAINER_MODE([disable])
 AC_CONFIG_HEADERS([plx905x-eeprom-config.h])
 
 dnl Set driver version from package version.
