@@ -93,6 +93,10 @@
 ## 6.13 as the test used for kernel version 5.2 was too restrictive and broke
 ## for 6.13.
 ##
+## 2025-11-11 Ian Abbott: In 'AC_PATH_KERNEL_SOURCE', change the check for
+## a source path name that looks like a Makefile variable to also check for
+## strings containing what looks like a Makefile variable.
+##
 
 
 dnl check for kernel build directory (may or may not be kernel source directory)
@@ -232,8 +236,8 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
 			# 5.2
 			dir=`sed -n -e 's/^include[[[:space:]]][[[:space:]]]*\(.*\)\/Makefile$/\1/p' "${kerneldir}/Makefile"`
 		fi
-		if expr "$dir" : '\$(' > /dev/null; then
-			# "$dir" looks like a Makefile variable.  Discard it.
+		if expr "$dir" : '.*\$(' > /dev/null; then
+			# "$dir" looks like it uses a Makefile variable.  Discard it.
 			dir=""
 		fi
 		if test -z "$dir"; then
