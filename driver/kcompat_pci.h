@@ -41,6 +41,11 @@
 #error "*************************************************************"
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
+/* struct pci_dev has member "revision" read from PCI config space. */
+#define KCOMPAT_PCI_HAVE_PCI_DEV_REVISION
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,4,22)
 #define pci_name(pdev) ((pdev)->slot_name)
 #endif
