@@ -228,7 +228,7 @@ MODULE_PARM_DESC(bus, "PCI bus number (optional)");
  */
 static unsigned int slot = 0;
 module_param(slot, uint, 0444);
-MODULE_PARM_DESC(bus, "PCI slot number (optional)");
+MODULE_PARM_DESC(slot, "PCI slot number (optional)");
 
 /*
  * PCI vendor ID (optional)
