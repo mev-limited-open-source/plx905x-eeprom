@@ -98,6 +98,10 @@
 #endif
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+typedef unsigned long uintptr_t;
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
 #if __GNUC__ >= 3
 /* FIXME: Not sure which __GNUC_MINOR__ supports '_Bool'. */
