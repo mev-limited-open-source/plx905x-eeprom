@@ -516,7 +516,7 @@ plx905x_read(struct file *filp, char *buf, size_t count, loff_t *f_pos)
 	if (mutex_lock_interruptible(&dev->mutex)) {
 		return -ERESTARTSYS;
 	}
-	if (!access_ok(buf, count)) {
+	if (!kcompat_access_ok(buf, count)) {
 		retval = -EFAULT;
 		goto out;
 	}
@@ -567,7 +567,7 @@ plx905x_write(struct file *filp, const char *buf, size_t count, loff_t *f_pos)
 	if (mutex_lock_interruptible(&dev->mutex)) {
 		return -ERESTARTSYS;
 	}
-	if (!access_ok(buf, count)) {
+	if (!kcompat_access_ok(buf, count)) {
 		retval = -EFAULT;
 		goto out;
 	}

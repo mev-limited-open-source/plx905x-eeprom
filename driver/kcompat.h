@@ -4164,20 +4164,27 @@ static inline void unpin_user_pages_dirty_lock(struct page **pages,
  * That has been redundant since kernel 2.5.70, and even then it was only
  * checked for kernels that support old 386 processors.
  *
- * Get rid of the first parameter and always pass VERIFY_WRITE for kernels
- * prior to 5.0.  This will fail for old 386 processors if the memory if
- * the memory region is not in fact writeable.
+ * access_ok() may be used internally by macros in <asm/uaccess.h>, so we
+ * cannot just redefine it.
+ *
+ * Define kcompat_access_ok() to be used insread of access_ok().  For
+ * kernels prior to 5.0, this will call access_ok() with 3 parameters, and
+ * will always pass VERIFY_WRITE as the first parameter.  This will fail
+ * for old 386 processors if the memory region is not in fact writable.
+ * For kernels 5.0 and later, it willcall access_ok() with 2 parameters.
  */
 #ifdef VERIFY_WRITE
 /* Pre 5.0 kernel. */
-static inline int _kcompat_access_ok(unsigned long addr, size_t size)
+static inline int kcompat_access_ok(const void __user *addr, size_t size)
 {
 	/* Always use VERIFY_WRITE.  Most architectures ignore it. */
 	return access_ok(VERIFY_WRITE, addr, size);
 }
-/* Redefine access_ok() to remove first parameter. */
-#undef access_ok
-#define access_ok(addr, size) _kcompat_access_ok((unsigned long)(addr), (size))
+#else
+static inline int kcompat_access_ok(const void __user *addr, size_t size)
+{
+	return access_ok(addr, size);
+}
 #endif
 
 /*
