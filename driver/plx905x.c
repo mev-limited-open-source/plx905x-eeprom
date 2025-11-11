@@ -850,7 +850,11 @@ plx905x_module_init(void)
 		 */
 		pci_read_config_byte(pcidev, 0x4C, &pvpdcntl);
 		/* Read PCI revision to distinguish PCI9050/9052 */
+#ifdef KCOMPAT_PCI_HAVE_PCI_DEV_REVISION
 		rev = pcidev->revision;
+#else
+		pci_read_config_byte(pcidev, PCI_REVISION_ID, &rev);
+#endif
 		/*
 		 * Check for PCI9030.  PCIBAR0 must be 128 bytes memory
 		 * and its PVDCNTL register must be 0x03
