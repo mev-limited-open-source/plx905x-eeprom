@@ -106,6 +106,10 @@ typedef _Bool bool;
 /* FIXME: This might break, and doesn't have the C99 _Bool semantics. */
 typedef int bool;
 #endif	/* if __GNUC__ >= 3 */
+enum {
+	false = 0,
+	true = 1
+};
 #endif	/* if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19) */
 
 #ifndef fallthrough
