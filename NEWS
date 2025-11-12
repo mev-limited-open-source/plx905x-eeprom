@@ -1,3 +1,15 @@
+Version 2.1.6 2025-11-12
+=============
+
+Add kernel compatibility fixes for 2.4 kernels and 2.6 kernels.
+
+Correct the module parameter description for the 'slot' module
+parameter.
+
+Disable "maintainer-mode" by default in the configure script.  It can be
+enabled with the --enable-maintainer-mode option if needed.
+
+
 Version 2.1.5 2025-06-19
 =============
 
