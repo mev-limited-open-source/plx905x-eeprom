@@ -97,6 +97,11 @@
 ## a source path name that looks like a Makefile variable to also check for
 ## strings containing what looks like a Makefile variable.
 ##
+## 2025-11-13 Ian Abbott: Added 'ACLINUX_CHECK_HAVE_GENERIC_BOOL_TYPE' function
+## to check if <linux/types.h> defines a 'bool' type.  This check is needed for
+## some Red Hat 2.6.18 kernels due to the type being back-ported from the
+## 2.6.19 kernel by Red Hat.
+##
 
 
 dnl check for kernel build directory (may or may not be kernel source directory)
@@ -406,6 +411,30 @@ AC_DEFUN([AC_LINUX_CHECK_HAVE_TRY_WAIT_FOR_COMPLETION],
 	AC_REQUIRE([AC_PATH_KERNEL_SOURCE])
 	AC_MSG_CHECKING([${kernelsrcdir} for try_wait_for_completion()])
 	$EGREP -q 'try_wait_for_completion\(' "${kernelsrcdir}/include/linux/completion.h"
+	if (($?)); then
+		AC_MSG_RESULT([no])
+		$2
+	else
+		AC_MSG_RESULT([yes])
+		$1
+	fi
+])
+
+dnl Check if the kernel is new enough to have a generic 'bool' type in
+dnl <linux/types.h> and 'false' and 'true' enum constants in <linux/stddef.h>.
+dnl This was added dnl in mainline kernel 2.6.19 but Red Hat back-ported it to
+dnl some of their dnl 2.6.18 kernels (RHEL 5.x).
+dnl
+dnl AC_LINUX_CHECK_HAVE_GENERIC_BOOL_TYPE([ACTION-IF-FOUND],
+dnl                                       [ACTION-IF-NOT-FOUND])
+dnl
+dnl Uses ${kernelsrcdir}.
+AC_DEFUN([AC_LINUX_CHECK_HAVE_GENERIC_BOOL_TYPE],
+[
+	AC_REQUIRE([AC_PROG_EGREP])
+	AC_REQUIRE([AC_PATH_KERNEL_SOURCE])
+	AC_MSG_CHECKING([${kernelsrcdir} for 'bool' in include/linux/types.h])
+	$EGREP -q 'bool;' "${kernelsrcdir}/include/linux/types.h"
 	if (($?)); then
 		AC_MSG_RESULT([no])
 		$2
