@@ -1,3 +1,10 @@
+Version 2.1.7 2025-11-13
+=============
+
+Add configure time checks for some Red Hat Linux kernel back-ported
+features in RHEL 5 and RHEL 6.1 that cannot be detected while building.
+
+
 Version 2.1.6 2025-11-12
 =============
 
