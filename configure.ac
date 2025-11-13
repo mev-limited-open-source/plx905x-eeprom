@@ -96,6 +96,12 @@ if test "$have_pci" != "yes"; then
   AC_MSG_ERROR([kernel has no PCI support!])
 fi
 
+dnl check for backported kernel features that would screw us up.
+AC_LINUX_CHECK_REQUEST_FIRMWARE_NOWAIT_HAS_GFP(
+  [AC_DEFINE([KCOMPAT_REQUEST_FIRMWARE_NOWAIT_HAS_GFP], [1],
+     [Define to 1 if request_firmware_nowait() has gfp parameter])
+  ], [])
+
 AC_LINUX_CHECK_HAVE_COMPLETION_DONE(
   [AC_DEFINE([KCOMPAT_HAVE_COMPLETION_DONE], [1],
 	     [Define to 1 if completion_done() exists])
@@ -104,6 +110,11 @@ AC_LINUX_CHECK_HAVE_COMPLETION_DONE(
 AC_LINUX_CHECK_HAVE_TRY_WAIT_FOR_COMPLETION(
   [AC_DEFINE([KCOMPAT_HAVE_TRY_WAIT_FOR_COMPLETION], [1],
 	     [Define to 1 if try_wait_for_completion() exists])
+  ], [])
+
+AC_LINUX_CHECK_HAVE_GENERIC_BOOL_TYPE(
+  [AC_DEFINE([KCOMPAT_HAVE_GENERIC_BOOL_TYPE], [1],
+    [Define to 1 if type bool is defined])
   ], [])
 
 dnl If moduledir is default, set to the actual default
