@@ -44,8 +44,14 @@
  *
  * KCOMPAT_HAVE_COMPLETION_DONE and KCOMPAT_HAVE_TRY_WAIT_FOR_COMPLETION
  * may be defined outside this header file.  These need to be set for some
- * Red Hat 2.6.18 kernels (fro RHEL 5.x).  If they haven't beed defined
+ * Red Hat 2.6.18 kernels (for RHEL 5.x).  If they haven't been defined
  * already, this file will define them for kernel version 2.6.27 onwards.
+ *
+ * KCOMPAT_HAVE_GENERIC_BOOL_TYPE may defined outside this header file.
+ * These need to be set for some Red Hat 2.6.18 kernels (for RHEL 5.x).
+ * If they haven't been defined already, this file will define them for
+ * kernel version 2.6.19 onwards.  This indicates that a bool type has
+ * been defined by the <linux/types.h> header.
  */
 
 #ifndef KCOMPAT_H__INCLUDED
@@ -102,7 +108,18 @@
 typedef unsigned long uintptr_t;
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
+/*
+ * KCOMPAT_HAVE_GENERIC_BOOL_TYPE may have been defined outside this file
+ * for compatibility with some Red Hat 2.6.18 kernels.
+ */
+#ifndef KCOMPAT_HAVE_GENERIC_BOOL_TYPE
+/* Define KCOMPAT_HAVE_GENERIC_BOOL_TYPE for kernel version 2.6.19 onwards. */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)
+#define KCOMPAT_HAVE_GENERIC_BOOL_TYPE
+#endif /* if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19) */
+#endif /* ifndef KCOMPAT_HAVE_GENERIC_BOOL_TYPE */
+
+#ifndef KCOMPAT_HAVE_GENERIC_BOOL_TYPE
 #if __GNUC__ >= 3
 /* FIXME: Not sure which __GNUC_MINOR__ supports '_Bool'. */
 typedef _Bool bool;
@@ -114,7 +131,7 @@ enum {
 	false = 0,
 	true = 1
 };
-#endif	/* if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19) */
+#endif	/* ifndef KCOMPAT_HAVE_GENERIC_BOOL_TYPE */
 
 #ifndef fallthrough
 #define fallthrough	do {} while (0)  /* fallthrough */
