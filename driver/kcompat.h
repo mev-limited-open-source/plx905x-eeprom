@@ -685,6 +685,8 @@ static inline int kref_put(struct kref *kref, void (*release)(struct kref *))
 #else
 #define KCOMPAT_HAVE_LINUX_KREF_H
 
+#include <linux/kref.h>
+
 /* Prior to 2.6.9, kref_init() had a second parameter pointing to a
  * 'release' function.  Redefine it without the second parameter, setting
  * 'release' to a dummy non-null value. */
