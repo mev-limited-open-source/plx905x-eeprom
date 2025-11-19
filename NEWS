@@ -1,3 +1,11 @@
+Version 2.1.8 2025-11-19
+=============
+
+Add kernel compatibility fixes for early 2.6.x kernels.  These fixes are
+all in parts of the kcompat.h header that are compiled but not needed by
+the module.
+
+
 Version 2.1.7 2025-11-13
 =============
 
