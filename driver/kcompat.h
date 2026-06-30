@@ -3461,6 +3461,59 @@ static inline void *kcompat_kmemdup(const void *src, size_t len, gfp_t gfp)
 #define kmemdup(src, len, gfp) kcompat_kmemdup(src, len, gfp)
 #endif
 
+/*
+ * Define strscpy() for kernels prior to 4.3.0.
+ * Note that callers of strscpy() between kernel versions 4.3.0 and 4.15.x
+ * will get a warning about ignoring the return value of strscpy, but that
+ * warning was dropped from later kernel versions.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,3,0)
+static inline ssize_t kcompat_strscpy(char *d, const char *s, size_t n)
+{
+	const char *s_orig = s;
+	char ch = 1;
+
+	if (n) {
+		for (ch = *s; --n && ch; ch = *s) {
+			*d++ = ch;
+			s++;
+		}
+		*d = '\0';
+	}
+	return ch ? -E2BIG : (ssize_t)(s - s_orig);
+}
+#undef strscpy
+#define strscpy(d, s, n) kcompat_strscpy(d, s, n)
+#endif
+
+/*
+ * Define strscpy_pad() for kernels prior to 5.2.0 except for LTS kernels
+ * 4.4.258 or later, 4.9.258 or later, 4.14.222 or later, 4.19.176 or later.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,2,0) || \
+    (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,258) && \
+     LINUX_VERSION_CODE < KERNEL_VERSION(4,5,0)) || \
+    (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,258) && \
+     LINUX_VERSION_CODE < KERNEL_VERSION(4,10,0)) || \
+    (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,222) && \
+     LINUX_VERSION_CODE < KERNEL_VERSION(4,15,0)) || \
+    (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,176) && \
+     LINUX_VERSION_CODE < KERNEL_VERSION(4,20,0))
+static inline ssize_t kcompat_strscpy_pad(char *d, const char *s, size_t n)
+{
+	ssize_t written;
+
+	written = strscpy(d, s, n);
+	if (written < 0 || written == n - 1)
+		return written;
+
+	memset(d + written + 1, 0, n - written - 1);
+	return written;
+}
+#undef strscpy_pad
+#define strscpy_pad(d, s, n) kcompat_strscpy_pad(d, s, n)
+#endif
+
 /* Define spin_trylock_irqsave(), spin_trylock_irq(), and spin_trylock_bh()
  * if they are missing.  WARNING: These use GCC extensions! */
 
