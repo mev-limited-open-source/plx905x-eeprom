@@ -1247,6 +1247,20 @@ static inline void hlist_move_list(struct hlist_head *old,
 	     pos = n)
 #endif
 
+/* <linux/stringify.h> stuff. */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,18) && \
+     LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)) || \
+    LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,32)
+/* <linux/stringify.h> exists and can be included to define __stringify(x). */
+#define KCOMPAT_HAVE_LINUX_STRINGIFY_H
+#include <linux/stringify.h>
+#else
+/* <linux/stringify.h> does not exist.  Define __stringify(x). */
+#undef __stringify_1
+#undef __stringify
+#define __stringify_1(x) #x
+#define __stringify(x) __stringify_1(x)
+#endif
 
 #ifndef BUS_ID_SIZE
 #define BUS_ID_SIZE	20
