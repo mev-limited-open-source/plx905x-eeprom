@@ -4281,6 +4281,17 @@ static inline int kcompat_access_ok(const void __user *addr, size_t size)
 #endif
 
 /*
+ * Kernel 7.4 removed the __get_user() and __put_user() macros.  If they
+ * are not defined, define them to call the get_user() and put_user() macros.
+ */
+#ifndef __get_user
+#define __get_user(x, ptr) get_user(x, ptr)
+#endif
+#ifndef __put_user
+#define __put_user(x, ptr) put_user(x, ptr)
+#endif
+
+/*
  * Simplified atomic barriers introduced in kernel version 3.16.
  */
 
